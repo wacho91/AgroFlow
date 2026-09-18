@@ -10,12 +10,25 @@ from sqlalchemy import text
 # Importar el engine y la Base
 from .database import Base, engine
 
-# Importar los routers (asumiendo que están en src/routes/__init__.py)
+# === BUSCADOR INTELIGENTE DE ROUTERS (Arquitectura Hexagonal) ===
+router = None
 try:
-    from .routes import router
+    # Intento 1: La ruta que viste en la captura (infrastructure/api/v1)
+    from .infrastructure.api.v1 import router as found_router
+    router = found_router
 except ImportError:
-    router = None
-    print("⚠️ Advertencia: No se encontró el router de rutas.")
+    try:
+        # Intento 2: Quizás la nombraron en plural (infrastructure/api/v1/routers)
+        from .infrastructure.api.v1.routers import router as found_router
+        router = found_router
+    except ImportError:
+        try:
+            # Intento 3: Quizás la pusieron directo en infrastructure
+            from .infrastructure.router import router as found_router
+            router = found_router
+        except ImportError:
+            print("⚠️ Advertencia: No se encontró el router de rutas. Revisa la carpeta infrastructure.")
+# ===============================================================
 
 # Configuración de logs
 logging.basicConfig(level=logging.INFO)
@@ -26,7 +39,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # === MAGIA: Crear tablas automáticamente en SQLite ===
     try:
         async with engine.begin() as conn:
-            # Ejecuta create_all para todas las tablas registradas en Base.metadata
             await conn.run_sync(Base.metadata.create_all)
         logger.info("✅ Tablas verificadas/creadas en la base de datos local (SQLite).")
     except Exception as e:
@@ -57,7 +69,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Incluir rutas si existen
+# Incluir rutas si se encontraron
 if router:
     app.include_router(router)
 
