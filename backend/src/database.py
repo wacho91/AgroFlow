@@ -1,77 +1,38 @@
-"""
-AgroFlow — Conexión asíncrona a PostgreSQL (Supabase).
-Configuración de engine, session factory y Base declarativa.
-"""
-from __future__ import annotations
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-from collections.abc import AsyncGenerator
-from typing import Any
-
-from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import (
-    AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import declarative_base
 
-from src.config import settings
+# Lee la URL desde el archivo .env
+DATABASE_URL = os.getenv("DATABASE_URL")
 
+# Creamos el motor asíncrono. 
+# Si es SQLite, le quitamos el "check_same_thread" para que FastAPI funcione bien.
+connect_args = {}
+if DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
 
-# Convención de nombres para constraints (Alembic-friendly)
-NAMING_CONVENTION: dict[str, str] = {
-    "ix": "ix_%(column_0_label)s",
-    "uq": "uq_%(table_name)s_%(column_0_name)s",
-    "ck": "ck_%(table_name)s_%(constraint_name)s",
-    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
-    "pk": "pk_%(table_name)s",
-}
-
-
-class Base(DeclarativeBase):
-    """Base declarativa con metadata y convención de nombres."""
-
-    metadata = MetaData(naming_convention=NAMING_CONVENTION)
-
-    def to_dict(self) -> dict[str, Any]:
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
-
-
-# Engine asíncrono (asyncpg)
-engine: AsyncEngine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.DB_ECHO,
-    pool_size=settings.DB_POOL_SIZE,
-    max_overflow=settings.DB_MAX_OVERFLOW,
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=False,
     pool_pre_ping=True,
-    pool_recycle=1800,
-    future=True,
+    connect_args=connect_args
 )
 
-# Session factory
-AsyncSessionLocal: async_sessionmaker[AsyncSession] = async_sessionmaker(
-    bind=engine,
+AsyncSessionLocal = async_sessionmaker(
+    engine,
     class_=AsyncSession,
     expire_on_commit=False,
-    autoflush=False,
-    autocommit=False,
 )
 
+Base = declarative_base()
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """Dependency FastAPI: provee una sesión por request."""
-    async with AsyncSessionLocal() as session:
-        try:
-            yield session
-            await session.commit()
-        except Exception:
-            await session.rollback()
-            raise
-        finally:
-            await session.close()
-
-
-async def dispose_engine() -> None:
-    """Cierra el pool al apagar la app."""
-    await engine.dispose()
+async def get_db():
+    async with AsyncSessionLocal() as db:
+        yield db
