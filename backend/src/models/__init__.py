@@ -2,8 +2,9 @@
 Registro central de modelos SQLAlchemy.
 Importar aquí garantiza que Alembic y Base.metadata los detecten.
 """
-from src.models.audit import AuditLog, IdempotencyKey
-from src.models.costos import (
+# Usamos importaciones relativas (con puntito) para evitar errores en FastAPI
+from .audit import AuditLog, IdempotencyKey
+from .costos import (
     Actividad,
     CicloProductivo,
     CostoActividad,
@@ -12,7 +13,7 @@ from src.models.costos import (
     Finca,
     Lote,
 )
-from src.models.enums import (
+from .enums import (
     AccionAuditoria,
     CondicionClimatica,
     EstadoCiclo,
@@ -33,7 +34,7 @@ from src.models.enums import (
     TipoNovedadNomina,
     TipoObligacion,
 )
-from src.models.inventario import (
+from .inventario import (
     Almacen,
     CapaConsumo,
     CapaKardex,
@@ -42,13 +43,13 @@ from src.models.inventario import (
     MovimientoKardex,
     StockActual,
 )
-from src.models.nomina import (
+from .nomina import (
     Jornalero,
     Labor,
     Liquidacion,
     NovedadNomina,
 )
-from src.models.tenancy import Tenant, Usuario
+from .tenancy import Tenant, Usuario
 
 __all__ = [
     # Tenancy
