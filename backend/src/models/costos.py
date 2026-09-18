@@ -22,16 +22,17 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.database import Base
-from src.models.enums import EstadoCiclo, MetodoProrrateo, TipoCosto
-from src.models.mixins import (
+# === IMPORTACIONES CORREGIDAS ===
+from ..database import Base
+from .enums import EstadoCiclo, MetodoProrrateo, TipoCosto
+from .mixins import (
     AuditUserMixin,
     SoftDeleteMixin,
     TenantMixin,
     TimestampMixin,
     UUIDPKMixin,
 )
-
+# =================================
 
 class Finca(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin, AuditUserMixin, Base):
     __tablename__ = "fincas"
@@ -54,7 +55,6 @@ class Finca(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin, AuditUser
     metadata_: Mapped[dict[str, Any]] = mapped_column(
         "metadata", JSONB, default=dict, nullable=False
     )
-
 
 class Lote(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin, AuditUserMixin, Base):
     __tablename__ = "lotes"
@@ -81,7 +81,6 @@ class Lote(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin, AuditUserM
         "metadata", JSONB, default=dict, nullable=False
     )
 
-
 class Cultivo(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin, AuditUserMixin, Base):
     __tablename__ = "cultivos"
     __table_args__ = (
@@ -100,7 +99,6 @@ class Cultivo(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin, AuditUs
     metadata_: Mapped[dict[str, Any]] = mapped_column(
         "metadata", JSONB, default=dict, nullable=False
     )
-
 
 class CicloProductivo(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin, AuditUserMixin, Base):
     __tablename__ = "ciclos_productivos"
@@ -146,7 +144,6 @@ class CicloProductivo(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin,
         "metadata", JSONB, default=dict, nullable=False
     )
 
-
 class Actividad(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin, AuditUserMixin, Base):
     __tablename__ = "actividades"
     __table_args__ = (
@@ -167,7 +164,6 @@ class Actividad(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin, Audit
     metadata_: Mapped[dict[str, Any]] = mapped_column(
         "metadata", JSONB, default=dict, nullable=False
     )
-
 
 class CostoActividad(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin, AuditUserMixin, Base):
     __tablename__ = "costos_actividad"
@@ -208,7 +204,6 @@ class CostoActividad(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin, 
     metadata_: Mapped[dict[str, Any]] = mapped_column(
         "metadata", JSONB, default=dict, nullable=False
     )
-
 
 class CostoSnapshot(UUIDPKMixin, Base):
     __tablename__ = "costos_snapshot"

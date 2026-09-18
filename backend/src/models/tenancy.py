@@ -20,10 +20,11 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import CITEXT, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.database import Base
-from src.models.enums import EstadoTenant, RolUsuario
-from src.models.mixins import SoftDeleteMixin, TimestampMixin, UUIDPKMixin
-
+# === IMPORTACIONES CORREGIDAS ===
+from ..database import Base
+from .enums import EstadoTenant, RolUsuario
+from .mixins import SoftDeleteMixin, TimestampMixin, UUIDPKMixin
+# =================================
 
 class Tenant(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "tenants"
@@ -55,7 +56,6 @@ class Tenant(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     metadata_: Mapped[dict[str, Any]] = mapped_column(
         "metadata", JSONB, default=dict, nullable=False
     )
-
 
 class Usuario(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "usuarios"

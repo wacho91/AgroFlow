@@ -8,7 +8,6 @@ from sqlalchemy import DateTime, ForeignKey, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-
 class UUIDPKMixin:
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -17,7 +16,6 @@ class UUIDPKMixin:
         server_default=func.gen_random_uuid(),
     )
 
-
 class TenantMixin:
     tenant_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -25,7 +23,6 @@ class TenantMixin:
         nullable=False,
         index=True,
     )
-
 
 class TimestampMixin:
     created_at: Mapped[datetime] = mapped_column(
@@ -38,12 +35,10 @@ class TimestampMixin:
         nullable=False,
     )
 
-
 class SoftDeleteMixin:
     deleted_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
-
 
 class AuditUserMixin:
     created_by: Mapped[uuid.UUID | None] = mapped_column(

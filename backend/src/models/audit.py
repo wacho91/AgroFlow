@@ -19,10 +19,11 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import INET, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.database import Base
-from src.models.enums import AccionAuditoria
-from src.models.mixins import UUIDPKMixin
-
+# === IMPORTACIONES CORREGIDAS ===
+from ..database import Base
+from .enums import AccionAuditoria
+from .mixins import UUIDPKMixin
+# =================================
 
 class AuditLog(Base):
     __tablename__ = "audit_log"
@@ -46,7 +47,6 @@ class AuditLog(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-
 
 class IdempotencyKey(UUIDPKMixin, Base):
     __tablename__ = "idempotency_keys"
