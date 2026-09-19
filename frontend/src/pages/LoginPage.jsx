@@ -11,11 +11,13 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     
-    // Simulamos un login de prueba para que puedas entrar a ver el sistema
+    // Simulamos un login de prueba para que puedas entrar al sistema
     setTimeout(() => {
       setLoading(false);
-      // Aquí más adelante pondremos la lógica de Supabase/Auth
-      alert('¡Login de prueba exitoso! Conectando con el backend...');
+      // Guardamos el token en el navegador
+      localStorage.setItem('agroflow_token', 'token_de_prueba_dev');
+      // ¡Lo mandamos al dashboard!
+      navigate('/app'); 
     }, 1000);
   };
 
