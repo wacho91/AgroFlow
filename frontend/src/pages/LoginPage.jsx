@@ -7,18 +7,35 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     
-    // Simulamos un login de prueba para que puedas entrar al sistema
-    setTimeout(() => {
-      setLoading(false);
-      // Guardamos el token en el navegador
-      localStorage.setItem('agroflow_token', 'token_de_prueba_dev');
+    try {
+      // Hacemos la petición real a nuestro backend en FastAPI
+      const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await response.json();
+      
+      // Si el backend responde con un error (ej: contraseña incorrecta)
+      if (!response.ok) {
+        throw new Error(data.detail || 'Error al iniciar sesión');
+      }
+      
+      // Guardamos el token real que nos dio FastAPI
+      localStorage.setItem('agroflow_token', data.access_token);
       // ¡Lo mandamos al dashboard!
       navigate('/app'); 
-    }, 1000);
+      
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
