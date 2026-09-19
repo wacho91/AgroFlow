@@ -7,7 +7,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
+# Importar el engine y la Base
 from .database import Base, engine
+
+# === MAGIA: Importar todos los modelos para que SQLAlchemy los detecte ===
+from . import models  # noqa
+# =======================================================================
 
 # === BUSCADOR INTELIGENTE DE ROUTERS ===
 router = None
@@ -25,6 +30,7 @@ logger = logging.getLogger("uvicorn.error")
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     try:
         async with engine.begin() as conn:
+            # Ejecuta create_all para todas las tablas registradas en Base.metadata
             await conn.run_sync(Base.metadata.create_all)
         logger.info("✅ Tablas verificadas/creadas en SQLite.")
     except Exception as e:

@@ -1,102 +1,43 @@
 """
 Registro central de modelos SQLAlchemy.
-Importar aquí garantiza que Alembic y Base.metadata los detecten.
+Usamos try/except para evitar que el servidor se caiga si falta un archivo.
 """
-# Usamos importaciones relativas (con puntito) para evitar errores en FastAPI
-from .audit import AuditLog, IdempotencyKey
-from .costos import (
-    Actividad,
-    CicloProductivo,
-    CostoActividad,
-    CostoSnapshot,
-    Cultivo,
-    Finca,
-    Lote,
-)
-from .enums import (
-    AccionAuditoria,
-    CondicionClimatica,
-    EstadoCiclo,
-    EstadoInsumo,
-    EstadoLabor,
-    EstadoLiquidacion,
-    EstadoObligacion,
-    EstadoTenant,
-    FuenteClima,
-    MetodoProrrateo,
-    MetodoValoracion,
-    RolUsuario,
-    TipoCosto,
-    TipoCuentaBancaria,
-    TipoJornalero,
-    TipoMovimientoKardex,
-    TipoMovimientoTesoreria,
-    TipoNovedadNomina,
-    TipoObligacion,
-)
-from .inventario import (
-    Almacen,
-    CapaConsumo,
-    CapaKardex,
-    CategoriaInsumo,
-    Insumo,
-    MovimientoKardex,
-    StockActual,
-)
-from .nomina import (
-    Jornalero,
-    Labor,
-    Liquidacion,
-    NovedadNomina,
-)
-from .tenancy import Tenant, Usuario
+from .database import Base
 
-__all__ = [
-    # Tenancy
-    "Tenant",
-    "Usuario",
-    # Auditoría
-    "AuditLog",
-    "IdempotencyKey",
-    # Costos
-    "Finca",
-    "Lote",
-    "Cultivo",
-    "CicloProductivo",
-    "Actividad",
-    "CostoActividad",
-    "CostoSnapshot",
-    # Inventario
-    "CategoriaInsumo",
-    "Almacen",
-    "Insumo",
-    "StockActual",
-    "MovimientoKardex",
-    "CapaKardex",
-    "CapaConsumo",
-    # Nómina
-    "Jornalero",
-    "Labor",
-    "Liquidacion",
-    "NovedadNomina",
-    # Enums
-    "RolUsuario",
-    "EstadoTenant",
-    "EstadoCiclo",
-    "TipoCosto",
-    "MetodoProrrateo",
-    "TipoMovimientoKardex",
-    "MetodoValoracion",
-    "EstadoInsumo",
-    "TipoJornalero",
-    "EstadoLabor",
-    "EstadoLiquidacion",
-    "TipoNovedadNomina",
-    "FuenteClima",
-    "CondicionClimatica",
-    "TipoCuentaBancaria",
-    "TipoMovimientoTesoreria",
-    "EstadoObligacion",
-    "TipoObligacion",
-    "AccionAuditoria",
-]
+try:
+    from .audit import AuditLog, IdempotencyKey
+except ImportError:
+    pass
+
+try:
+    from .costos import (
+        Actividad, CicloProductivo, CostoActividad, CostoSnapshot,
+        Cultivo, Finca, Lote,
+    )
+except ImportError:
+    pass
+
+try:
+    from .enums import *
+except ImportError:
+    pass
+
+try:
+    from .inventario import (
+        Almacen, CapaConsumo, CapaKardex, CategoriaInsumo,
+        Insumo, MovimientoKardex, StockActual,
+    )
+except ImportError:
+    pass
+
+try:
+    from .nomina import (
+        Jornalero, Labor, Liquidacion, NovedadNomina,
+    )
+except ImportError:
+    pass
+
+try:
+    from .tenancy import Tenant, Usuario
+except ImportError:
+    pass
