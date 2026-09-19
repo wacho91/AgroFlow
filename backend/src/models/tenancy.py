@@ -79,7 +79,12 @@ class Usuario(UUIDPKMixin, TimestampMixin, SoftDeleteMixin, Base):
     )
     # === CORREGIDO: CITEXT cambiado a String ===
     email: Mapped[str] = mapped_column(String, nullable=False)
+    # === NUEVO CAMPO DE CONTRASEÑA ===
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    # =================================
+    nombre_completo: Mapped[str] = mapped_column(String(200), nullable=False)
     # ==========================================
+    
     nombre_completo: Mapped[str] = mapped_column(String(200), nullable=False)
     telefono: Mapped[str | None] = mapped_column(String(30))
     rol: Mapped[RolUsuario] = mapped_column(
