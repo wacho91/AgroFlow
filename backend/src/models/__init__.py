@@ -2,7 +2,9 @@
 Registro central de modelos SQLAlchemy.
 Usamos try/except para evitar que el servidor se caiga si falta un archivo.
 """
-from .database import Base
+# === CORRECCIÓN: Usamos dos puntitos (..) porque database.py está una carpeta arriba ===
+from ..database import Base
+# ====================================================================================
 
 try:
     from .audit import AuditLog, IdempotencyKey
