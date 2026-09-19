@@ -28,5 +28,13 @@ try:
 except ImportError:
     pass
 
+# === NUEVA RUTA DE AUTH ===
+try:
+    from .routers import auth
+    api_router.include_router(auth.router, prefix="/auth", tags=["Autenticación"])
+except ImportError:
+    pass
+# ==========================
+
 # Exportamos la variable que main.py está buscando
 router = api_router
