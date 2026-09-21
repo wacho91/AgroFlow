@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -13,12 +13,22 @@ export default function DashboardPage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-emerald-700">AgroFlow Dashboard 🌱</h1>
-          <button 
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600"
-          >
-            Cerrar Sesión
-          </button>
+          <div className="flex gap-3">
+            {/* === NUEVO BOTÓN PARA IR A FINCAS === */}
+            <Link 
+              to="/app/fincas" 
+              className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
+            >
+              Ir a Fincas →
+            </Link>
+            {/* ==================================== */}
+            <button 
+              onClick={handleLogout}
+              className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors"
+            >
+              Cerrar Sesión
+            </button>
+          </div>
         </div>
         
         <div className="bg-white p-6 rounded-xl shadow-md border border-slate-200">
