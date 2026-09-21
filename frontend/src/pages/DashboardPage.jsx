@@ -4,6 +4,7 @@ import { useNavigate, Link } from 'react-router-dom';
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [fincaCount, setFincaCount] = useState(0);
+  const [loteCount, setLoteCount] = useState(0); // === NUEVO CONTADOR DE LOTES ===
   
   const token = localStorage.getItem('agroflow_token');
 
@@ -12,7 +13,6 @@ export default function DashboardPage() {
     navigate('/login');
   };
 
-  // === MAGIA: Pedimos a la API el número de fincas reales ===
   useEffect(() => {
     if (!token) {
       navigate('/login');
@@ -21,13 +21,24 @@ export default function DashboardPage() {
     
     const fetchStats = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/v1/fincas/', {
+        // Traemos las fincas
+        const resFincas = await fetch('http://localhost:8000/api/v1/fincas/', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        if (res.ok) {
-          const data = await res.json();
-          setFincaCount(data.length); // Contamos cuántas fincas hay
+        if (resFincas.ok) {
+          const dataFincas = await resFincas.json();
+          setFincaCount(dataFincas.length);
         }
+
+        // === MAGIA: Traemos los lotes ===
+        const resLotes = await fetch('http://localhost:8000/api/v1/lotes/', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (resLotes.ok) {
+          const dataLotes = await resLotes.json();
+          setLoteCount(dataLotes.length);
+        }
+        // ================================
       } catch (err) {
         console.error("Error al cargar estadísticas");
       }
@@ -35,7 +46,6 @@ export default function DashboardPage() {
     
     fetchStats();
   }, [token, navigate]);
-  // ==========================================================
 
   return (
     <div className="min-h-screen bg-slate-50 p-8">
@@ -49,6 +59,14 @@ export default function DashboardPage() {
             >
               Ir a Fincas →
             </Link>
+            {/* === NUEVO BOTÓN DE LOTES === */}
+            <Link 
+              to="/app/lotes" 
+              className="bg-amber-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-amber-600 transition-colors"
+            >
+              Ir a Lotes →
+            </Link>
+            {/* ============================== */}
             <button 
               onClick={handleLogout}
               className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors"
@@ -64,16 +82,16 @@ export default function DashboardPage() {
             Has entrado exitosamente a AgroFlow. El backend en SQLite está corriendo perfecto y el frontend está conectado.
           </p>
           <div className="mt-6 grid grid-cols-3 gap-4">
-            {/* === CONTADOR REAL DE FINCAS === */}
             <div className="bg-emerald-50 p-4 rounded-lg border border-emerald-100">
               <p className="text-sm text-emerald-600 font-medium">Fincas</p>
               <p className="text-3xl font-bold text-emerald-800">{fincaCount}</p>
             </div>
-            {/* ================================ */}
+            {/* === CONTADOR REAL DE LOTES === */}
             <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
               <p className="text-sm text-amber-600 font-medium">Lotes</p>
-              <p className="text-3xl font-bold text-amber-800">0</p>
+              <p className="text-3xl font-bold text-amber-800">{loteCount}</p>
             </div>
+            {/* =============================== */}
             <div className="bg-sky-50 p-4 rounded-lg border border-sky-100">
               <p className="text-sm text-sky-600 font-medium">Insumos</p>
               <p className="text-3xl font-bold text-sky-800">0</p>
