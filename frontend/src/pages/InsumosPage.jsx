@@ -158,14 +158,21 @@ export default function InsumosPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {insumos.map((insumo) => {
-                        // Lógica de alerta de stock mínimo
-                        const isLow = insumo.stock_actual <= insumo.stock_minimo;
+                        // === MAGIA: Convertimos a número real para comparar bien ===
+                        const stockActual = Number(insumo.stock_actual);
+                        const stockMinimo = Number(insumo.stock_minimo);
+                        const isLow = stockActual <= stockMinimo;
+                        
+                        // Formateamos para que si es entero, no muestre decimales
+                        const formattedStock = stockActual % 1 === 0 ? stockActual : stockActual.toFixed(2);
+                        // =============================================================
+
                         return (
                           <tr key={insumo.id} className="hover:bg-slate-50">
                             <td className="px-4 py-3 font-medium text-slate-800">{insumo.codigo}</td>
                             <td className="px-4 py-3 text-slate-600">{insumo.nombre}</td>
                             <td className="px-4 py-3 text-slate-800 font-medium">
-                              {insumo.stock_actual} <span className="text-xs text-slate-400">{insumo.unidad_medida}</span>
+                              {formattedStock} <span className="text-xs text-slate-400">{insumo.unidad_medida}</span>
                             </td>
                             <td className="px-4 py-3">
                               {isLow ? (
