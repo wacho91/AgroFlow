@@ -45,6 +45,13 @@ try:
     api_router.include_router(lotes.router, prefix="/lotes", tags=["Lotes"])
 except ImportError:
     pass
-# ======================
+
+# === NUEVA RUTA DE INSUMOS ===
+try:
+    from .routers import insumos
+    api_router.include_router(insumos.router, prefix="/insumos", tags=["Insumos"])
+except ImportError:
+    pass
+# =============================
 
 router = api_router
