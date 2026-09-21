@@ -4,7 +4,8 @@ import { useNavigate, Link } from 'react-router-dom';
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [fincaCount, setFincaCount] = useState(0);
-  const [loteCount, setLoteCount] = useState(0); // === NUEVO CONTADOR DE LOTES ===
+  const [loteCount, setLoteCount] = useState(0);
+  const [insumoCount, setInsumoCount] = useState(0); // === NUEVO CONTADOR DE INSUMOS ===
   
   const token = localStorage.getItem('agroflow_token');
 
@@ -30,7 +31,7 @@ export default function DashboardPage() {
           setFincaCount(dataFincas.length);
         }
 
-        // === MAGIA: Traemos los lotes ===
+        // Traemos los lotes
         const resLotes = await fetch('http://localhost:8000/api/v1/lotes/', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -38,7 +39,16 @@ export default function DashboardPage() {
           const dataLotes = await resLotes.json();
           setLoteCount(dataLotes.length);
         }
-        // ================================
+
+        // === MAGIA: Traemos los insumos ===
+        const resInsumos = await fetch('http://localhost:8000/api/v1/insumos/', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (resInsumos.ok) {
+          const dataInsumos = await resInsumos.json();
+          setInsumoCount(dataInsumos.length);
+        }
+        // ==================================
       } catch (err) {
         console.error("Error al cargar estadísticas");
       }
@@ -52,21 +62,27 @@ export default function DashboardPage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-emerald-700">AgroFlow Dashboard 🌱</h1>
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-wrap">
             <Link 
               to="/app/fincas" 
               className="bg-emerald-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-emerald-700 transition-colors"
             >
               Ir a Fincas →
             </Link>
-            {/* === NUEVO BOTÓN DE LOTES === */}
             <Link 
               to="/app/lotes" 
               className="bg-amber-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-amber-600 transition-colors"
             >
               Ir a Lotes →
             </Link>
-            {/* ============================== */}
+            {/* === NUEVO BOTÓN DE INSUMOS === */}
+            <Link 
+              to="/app/insumos" 
+              className="bg-sky-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-sky-700 transition-colors"
+            >
+              Ir a Insumos →
+            </Link>
+            {/* =============================== */}
             <button 
               onClick={handleLogout}
               className="bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition-colors"
@@ -86,16 +102,16 @@ export default function DashboardPage() {
               <p className="text-sm text-emerald-600 font-medium">Fincas</p>
               <p className="text-3xl font-bold text-emerald-800">{fincaCount}</p>
             </div>
-            {/* === CONTADOR REAL DE LOTES === */}
             <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
               <p className="text-sm text-amber-600 font-medium">Lotes</p>
               <p className="text-3xl font-bold text-amber-800">{loteCount}</p>
             </div>
-            {/* =============================== */}
+            {/* === CONTADOR REAL DE INSUMOS === */}
             <div className="bg-sky-50 p-4 rounded-lg border border-sky-100">
               <p className="text-sm text-sky-600 font-medium">Insumos</p>
-              <p className="text-3xl font-bold text-sky-800">0</p>
+              <p className="text-3xl font-bold text-sky-800">{insumoCount}</p>
             </div>
+            {/* ================================= */}
           </div>
         </div>
       </div>
