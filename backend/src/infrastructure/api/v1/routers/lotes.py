@@ -38,7 +38,12 @@ async def create_lote(lote: LoteCreate, db: AsyncSession = Depends(get_db)):
     if not finca:
         raise HTTPException(status_code=404, detail="La finca seleccionada no existe.")
     
-    nuevo_lote = Lote(**lote.dict())
+    # === MAGIA: Copiamos el tenant_id de la finca al lote ===
+    lote_data = lote.dict()
+    lote_data['tenant_id'] = finca.tenant_id
+    # ========================================================
+    
+    nuevo_lote = Lote(**lote_data)
     db.add(nuevo_lote)
     await db.commit()
     await db.refresh(nuevo_lote)
