@@ -1,9 +1,7 @@
 from fastapi import APIRouter
 
-# Creamos el router principal
 api_router = APIRouter()
 
-# Cargamos los routers desde la subcarpeta 'routers'
 try:
     from .routers import tenancy
     api_router.include_router(tenancy.router, prefix="/tenancy", tags=["Tenancy"])
@@ -28,13 +26,18 @@ try:
 except ImportError:
     pass
 
-# === NUEVA RUTA DE AUTH ===
 try:
     from .routers import auth
     api_router.include_router(auth.router, prefix="/auth", tags=["Autenticación"])
 except ImportError:
     pass
+
+# === NUEVA RUTA DE FINCAS ===
+try:
+    from .routers import fincas
+    api_router.include_router(fincas.router, prefix="/fincas", tags=["Fincas"])
+except ImportError:
+    pass
 # ==========================
 
-# Exportamos la variable que main.py está buscando
 router = api_router
