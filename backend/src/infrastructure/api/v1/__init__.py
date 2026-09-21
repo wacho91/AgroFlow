@@ -38,6 +38,13 @@ try:
     api_router.include_router(fincas.router, prefix="/fincas", tags=["Fincas"])
 except ImportError:
     pass
-# ==========================
+
+# === RUTA DE LOTES ===
+try:
+    from .routers import lotes
+    api_router.include_router(lotes.router, prefix="/lotes", tags=["Lotes"])
+except ImportError:
+    pass
+# ======================
 
 router = api_router
