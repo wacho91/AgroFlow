@@ -54,4 +54,12 @@ except ImportError:
     pass
 # =============================
 
+# === NUEVA RUTA DE CULTIVOS ===
+try:
+    from .routers import cultivos
+    api_router.include_router(cultivos.router, prefix="/cultivos", tags=["Cultivos"])
+except ImportError:
+    pass
+# ==============================
+
 router = api_router
