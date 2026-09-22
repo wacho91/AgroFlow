@@ -43,3 +43,8 @@ try:
     from .tenancy import Tenant, Usuario
 except ImportError:
     pass
+
+try:
+    from .tesoreria import MovimientoTesoreria
+except ImportError:
+    pass

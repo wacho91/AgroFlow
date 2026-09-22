@@ -62,4 +62,12 @@ except ImportError:
     pass
 # ==============================
 
+# === NUEVA RUTA DE TESORERÍA ===
+try:
+    from .routers import tesoreria
+    api_router.include_router(tesoreria.router, prefix="/tesoreria", tags=["Tesorería"])
+except ImportError:
+    pass
+# ==============================
+
 router = api_router
