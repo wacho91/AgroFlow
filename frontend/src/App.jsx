@@ -5,6 +5,7 @@ import DashboardPage from './pages/DashboardPage';
 import FincasPage from './pages/FincasPage';
 import LotesPage from './pages/LotesPage';
 import InsumosPage from './pages/InsumosPage';
+import CultivosPage from './pages/CultivosPage';
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
           <Route path="fincas" element={<FincasPage />} />
           <Route path="lotes" element={<LotesPage />} />
           <Route path="insumos" element={<InsumosPage />} />
+          <Route path="cultivos" element={<CultivosPage />} />
         </Route>
         
         <Route path="*" element={<Navigate to="/login" />} />
