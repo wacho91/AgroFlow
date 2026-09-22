@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export default function LotesPage() {
   const navigate = useNavigate();
@@ -70,7 +70,7 @@ export default function LotesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8">
+    <div className="bg-slate-50 p-8">
       <div className="max-w-6xl mx-auto">
         
         <div className="flex justify-between items-center mb-8">
@@ -78,9 +78,6 @@ export default function LotesPage() {
             <h1 className="text-3xl font-bold text-amber-600">Gestión de Lotes 🗺️</h1>
             <p className="text-slate-500">Divide tu finca en parcelas para sembrar.</p>
           </div>
-          <Link to="/app" className="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold hover:bg-slate-300">
-            ← Volver al Dashboard
-          </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
