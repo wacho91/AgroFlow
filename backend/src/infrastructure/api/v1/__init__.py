@@ -70,4 +70,12 @@ except ImportError:
     pass
 # ==============================
 
+# === NUEVA RUTA DE EVENTOS / COSTOS ===
+try:
+    from .routers import eventos
+    api_router.include_router(eventos.router, prefix="/eventos", tags=["Eventos Agrícolas"])
+except ImportError:
+    pass
+# ======================================
+
 router = api_router
