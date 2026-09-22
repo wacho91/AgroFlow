@@ -47,3 +47,12 @@ async def create_movimiento(mov: MovimientoCreate, db: AsyncSession = Depends(ge
     await db.commit()
     await db.refresh(nuevo_mov)
     return nuevo_mov
+
+@router.delete("/{mov_id}", status_code=204)
+async def delete_movimiento(mov_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    mov = await db.get(MovimientoTesoreria, mov_id)
+    if not mov:
+        raise HTTPException(status_code=404, detail="Movimiento no encontrado")
+    await db.delete(mov)
+    await db.commit()
+    return None
