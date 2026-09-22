@@ -36,6 +36,9 @@ export default function AppLayout() {
           <NavLink to="/app/insumos" className={linkClass}>
             <span>🧪</span> Insumos
           </NavLink>
+          <NavLink to="/app/cultivos" className={linkClass}>
+            <span>🌿</span> Cultivos
+          </NavLink>
         </nav>
         <div className="mt-auto">
           <button 
