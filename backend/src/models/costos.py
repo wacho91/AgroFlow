@@ -103,7 +103,7 @@ class Actividad(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin, Audit
 
 class CostoActividad(UUIDPKMixin, TenantMixin, TimestampMixin, SoftDeleteMixin, AuditUserMixin, Base):
     __tablename__ = "costos_actividad"
-    ciclo_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("ciclos_productivos.id"), nullable=False, index=True)
+    ciclo_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("ciclos_productivos.id"), nullable=True, index=True)
     actividad_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), ForeignKey("actividades.id"))
     lote_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("lotes.id"), nullable=False, index=True)
     tipo_costo: Mapped[TipoCosto] = mapped_column(SAEnum(TipoCosto, name="tipo_costo", native_enum=True), nullable=False)
