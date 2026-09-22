@@ -20,6 +20,7 @@ class InsumoCreate(BaseModel):
     unidad_medida: str = "kg"
     stock_actual: Decimal = Decimal("0")
     stock_minimo: Decimal = Decimal("0")
+    costo_promedio: Decimal = Decimal("0")  # <--- AGREGAR ESTO
 
 class InsumoResponse(InsumoCreate):
     id: uuid.UUID
