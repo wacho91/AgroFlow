@@ -152,8 +152,12 @@ export default function EventosPage() {
                       <tr key={ev.id} className="hover:bg-slate-50">
                         <td className="px-4 py-3 text-slate-500">{ev.fecha}</td>
                         <td className="px-4 py-3 font-medium text-slate-800">{ev.descripcion}</td>
-                        <td className="px-4 py-3 text-slate-600">{ev.cantidad}</td>
-                        <td className="px-4 py-3 font-bold text-violet-600">{formatCurrency(ev.costo_total)}</td>
+                        <td className="px-4 py-3 text-slate-600">
+                          {Number(ev.cantidad) % 1 === 0 ? Number(ev.cantidad) : Number(ev.cantidad).toFixed(2)}
+                        </td>
+                        <td className="px-4 py-3 font-bold text-violet-600">
+                          ${Number(ev.costo_total).toLocaleString('es-CO')}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

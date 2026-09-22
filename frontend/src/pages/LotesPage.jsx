@@ -162,8 +162,8 @@ export default function LotesPage() {
                         return (
                           <tr key={lote.id} className="hover:bg-slate-50">
                             <td className="px-4 py-3 font-medium text-slate-800">{lote.codigo}</td>
-                            <td className="px-4 py-3 text-slate-600">
-                              {lote.nombre} <span className="text-xs text-slate-400">({finca?.nombre})</span>
+                            <td className="px-4 py-3 text-slate-500">
+                              {Number(lote.area_ha) % 1 === 0 ? Number(lote.area_ha) : Number(lote.area_ha).toFixed(2)} <span className="text-xs text-slate-400">ha</span>
                             </td>
                             <td className="px-4 py-3 text-slate-500">{lote.area_ha}</td>
                             <td className="px-4 py-3">
