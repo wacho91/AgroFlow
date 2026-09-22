@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 
 export default function InsumosPage() {
   const navigate = useNavigate();
@@ -7,7 +8,6 @@ export default function InsumosPage() {
   const [form, setForm] = useState({ nombre: '', codigo: '', unidad_medida: 'kg', stock_actual: 0, stock_minimo: 0 });
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
   const token = localStorage.getItem('agroflow_token');
 
@@ -16,17 +16,20 @@ export default function InsumosPage() {
       const res = await fetch('http://localhost:8000/api/v1/insumos/', { headers: { 'Authorization': `Bearer ${token}` } });
       const data = await res.json();
       setInsumos(data);
-    } catch (err) { setError('Error al cargar insumos'); } 
-    finally { setLoading(false); }
+    } catch (err) {
+      Swal.fire('Error', 'No se pudo cargar los insumos', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { if (!token) { navigate('/login'); return; } fetchInsumos(); }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     const method = editingId ? 'PUT' : 'POST';
     const url = editingId ? `http://localhost:8000/api/v1/insumos/${editingId}` : 'http://localhost:8000/api/v1/insumos/';
+    
     try {
       const res = await fetch(url, {
         method,
@@ -34,21 +37,59 @@ export default function InsumosPage() {
         body: JSON.stringify(form)
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Error al guardar el insumo');
+      if (!res.ok) throw new Error(data.detail || 'Ocurrió un error');
+      
+      // === ALERTA DE ÉXITO SWEETALERT ===
+      Swal.fire({
+        icon: 'success',
+        title: editingId ? '¡Actualizado!' : '¡Creado!',
+        text: `El insumo ha sido ${editingId ? 'actualizado' : 'registrado'} correctamente.`,
+        confirmButtonColor: '#0284c7',
+        timer: 1800,
+        timerProgressBar: true
+      });
+      
       setForm({ nombre: '', codigo: '', unidad_medida: 'kg', stock_actual: 0, stock_minimo: 0 });
       setEditingId(null);
       fetchInsumos();
-    } catch (err) { setError(err.message); }
+    } catch (err) {
+      // === ALERTA DE ERROR SWEETALERT ===
+      Swal.fire('Error', err.message, 'error');
+    }
   };
 
-  const handleEdit = (insumo) => { setForm(insumo); setEditingId(insumo.id); };
-  const handleCancelEdit = () => { setForm({ nombre: '', codigo: '', unidad_medida: 'kg', stock_actual: 0, stock_minimo: 0 }); setEditingId(null); };
+  const handleEdit = (insumo) => {
+    setForm(insumo);
+    setEditingId(insumo.id);
+  };
+
+  const handleCancelEdit = () => {
+    setForm({ nombre: '', codigo: '', unidad_medida: 'kg', stock_actual: 0, stock_minimo: 0 });
+    setEditingId(null);
+  };
+
   const handleDelete = async (id) => {
-    if (!window.confirm("¿Eliminar este insumo?")) return;
-    try {
-      await fetch(`http://localhost:8000/api/v1/insumos/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-      fetchInsumos();
-    } catch (err) { setError("Error al eliminar"); }
+    // === CONFIRMACIÓN SWEETALERT ===
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "¡No podrás revertir esta acción! El insumo se eliminará permanentemente.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await fetch(`http://localhost:8000/api/v1/insumos/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+          Swal.fire('¡Eliminado!', 'El insumo ha sido eliminado.', 'success');
+          fetchInsumos();
+        } catch (err) {
+          Swal.fire('Error', 'No se pudo eliminar.', 'error');
+        }
+      }
+    });
   };
 
   return (
@@ -62,7 +103,6 @@ export default function InsumosPage() {
         <div className="md:col-span-1">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <h2 className="text-xl font-semibold text-slate-800 mb-4">{editingId ? 'Editar Insumo' : 'Nuevo Insumo'}</h2>
-            {error && <div className="bg-red-50 text-red-600 p-2 rounded mb-4 text-sm">{error}</div>}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Nombre</label>
