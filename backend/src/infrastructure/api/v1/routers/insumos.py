@@ -49,3 +49,26 @@ async def create_insumo(insumo: InsumoCreate, db: AsyncSession = Depends(get_db)
     await db.commit()
     await db.refresh(nuevo_insumo)
     return nuevo_insumo
+
+
+@router.put("/{insumo_id}", response_model=InsumoResponse)
+async def update_insumo(insumo_id: uuid.UUID, insumo_update: InsumoCreate, db: AsyncSession = Depends(get_db)):
+    insumo = await db.get(Insumo, insumo_id)
+    if not insumo:
+        raise HTTPException(status_code=404, detail="Insumo no encontrado")
+    
+    for field, value in insumo_update.dict().items():
+        setattr(insumo, field, value)
+    
+    await db.commit()
+    await db.refresh(insumo)
+    return insumo
+
+@router.delete("/{insumo_id}", status_code=204)
+async def delete_insumo(insumo_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    insumo = await db.get(Insumo, insumo_id)
+    if not insumo:
+        raise HTTPException(status_code=404, detail="Insumo no encontrado")
+    await db.delete(insumo)
+    await db.commit()
+    return None
