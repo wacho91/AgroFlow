@@ -42,6 +42,9 @@ export default function AppLayout() {
           <NavLink to="/app/tesoreria" className={linkClass}>
             <span>💰</span> Tesorería
           </NavLink>
+          <NavLink to="/app/eventos" className={linkClass}>
+            <span>⚡</span> Eventos
+          </NavLink>
         </nav>
         <div className="mt-auto">
           <button 
