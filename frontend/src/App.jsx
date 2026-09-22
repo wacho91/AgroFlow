@@ -7,6 +7,7 @@ import LotesPage from './pages/LotesPage';
 import InsumosPage from './pages/InsumosPage';
 import CultivosPage from './pages/CultivosPage';
 import TesoreriaPage from './pages/TesoreriaPage';
+import EventosPage from './pages/EventosPage';
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
           <Route path="insumos" element={<InsumosPage />} />
           <Route path="cultivos" element={<CultivosPage />} />
           <Route path="tesoreria" element={<TesoreriaPage />} />
+          <Route path="eventos" element={<EventosPage />} />
         </Route>
         
         <Route path="*" element={<Navigate to="/login" />} />
