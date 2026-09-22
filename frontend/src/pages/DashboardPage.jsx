@@ -1,172 +1,128 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 
-export default function FincasPage() {
-  const navigate = useNavigate();
-  const [fincas, setFincas] = useState([]);
-  const [form, setForm] = useState({ nombre: '', codigo: '', area_total_ha: 1, municipio: '', departamento: '' });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  // Obtenemos el token de sesión
+export default function DashboardPage() {
+  const [stats, setStats] = useState({ fincas: 0, lotes: 0, insumos: 0, cultivos: 0 });
   const token = localStorage.getItem('agroflow_token');
 
-  // Función para traer las fincas del backend
-  const fetchFincas = async () => {
-    try {
-      const res = await fetch('http://localhost:8000/api/v1/fincas/', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.status === 401) {
-        navigate('/login'); // Si el token no sirve, al login
-        return;
-      }
-      const data = await res.json();
-      setFincas(data);
-    } catch (err) {
-      setError('Error al cargar fincas');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-    fetchFincas();
-  }, []);
+    if (!token) return;
+    const fetchStats = async () => {
+      try {
+        const headers = { 'Authorization': `Bearer ${token}` };
+        const [resFincas, resLotes, resInsumos, resCultivos] = await Promise.all([
+          fetch('http://localhost:8000/api/v1/fincas/', { headers }),
+          fetch('http://localhost:8000/api/v1/lotes/', { headers }),
+          fetch('http://localhost:8000/api/v1/insumos/', { headers }),
+          fetch('http://localhost:8000/api/v1/cultivos/', { headers })
+        ]);
 
-  // Función para crear una finca nueva
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      const res = await fetch('http://localhost:8000/api/v1/fincas/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(form)
-      });
-      
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Error al crear la finca');
-      
-      setForm({ nombre: '', codigo: '', area_total_ha: 1, municipio: '', departamento: '' });
-      fetchFincas(); // Refrescamos la lista
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+        const dataFincas = resFincas.ok ? await resFincas.json() : [];
+        const dataLotes = resLotes.ok ? await resLotes.json() : [];
+        const dataInsumos = resInsumos.ok ? await resInsumos.json() : [];
+        const dataCultivos = resCultivos.ok ? await resCultivos.json() : [];
+
+        setStats({
+          fincas: dataFincas.length,
+          lotes: dataLotes.length,
+          insumos: dataInsumos.length,
+          cultivos: dataCultivos.length
+        });
+      } catch (err) {
+        console.error("Error al cargar estadísticas");
+      }
+    };
+    fetchStats();
+  }, [token]);
+
+  // === Datos Financieros (Simulados por ahora) ===
+  const dataBalance = [
+    { name: 'Ene', Ingresos: 12000000, Egresos: 8000000 },
+    { name: 'Feb', Ingresos: 15000000, Egresos: 9000000 },
+    { name: 'Mar', Ingresos: 18000000, Egresos: 12000000 },
+    { name: 'Abr', Ingresos: 14000000, Egresos: 7000000 },
+    { name: 'May', Ingresos: 22000000, Egresos: 11000000 },
+  ];
+
+  const dataGastos = [
+    { name: 'Insumos', value: 4500000 },
+    { name: 'Jornales', value: 3200000 },
+    { name: 'Maquinaria', value: 1500000 },
+    { name: 'Otros', value: 800000 },
+  ];
+  
+  const COLORS = ['#10b981', '#f59e0b', '#0ea5e9', '#ef4444'];
+  const formatCurrency = (value) => `$${value.toLocaleString('es-CO')}`;
 
   return (
     <div>
-      {/* Header limpio */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-emerald-700">Gestión de Fincas 🌱</h1>
-        <p className="text-slate-500">Registra y administra tus predios agrícolas.</p>
+      <h1 className="text-3xl font-bold text-slate-800 mb-2">Dashboard Financiero 📊</h1>
+      <p className="text-slate-500 mb-8">Resumen operativo y financiero de tu finca.</p>
+      
+      {/* KPIs Operativos (Pequeños) */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <p className="text-xs text-emerald-600 font-medium mb-1 uppercase">Fincas</p>
+          <p className="text-2xl font-bold text-slate-800">{stats.fincas}</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <p className="text-xs text-amber-600 font-medium mb-1 uppercase">Lotes</p>
+          <p className="text-2xl font-bold text-slate-800">{stats.lotes}</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <p className="text-xs text-sky-600 font-medium mb-1 uppercase">Insumos</p>
+          <p className="text-2xl font-bold text-slate-800">{stats.insumos}</p>
+        </div>
+        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <p className="text-xs text-lime-600 font-medium mb-1 uppercase">Cultivos</p>
+          <p className="text-2xl font-bold text-slate-800">{stats.cultivos}</p>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        
-        {/* Formulario de Registro */}
-        <div className="md:col-span-1">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-            <h2 className="text-xl font-semibold text-slate-800 mb-4">Nueva Finca</h2>
-            {error && <div className="bg-red-50 text-red-600 p-2 rounded mb-4 text-sm">{error}</div>}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Nombre</label>
-                <input 
-                  type="text" required
-                  value={form.nombre}
-                  onChange={(e) => setForm({...form, nombre: e.target.value})}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                  placeholder="Finca La Esperanza"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Código</label>
-                <input 
-                  type="text" required
-                  value={form.codigo}
-                  onChange={(e) => setForm({...form, codigo: e.target.value})}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                  placeholder="FL-001"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Área Total (Hectáreas)</label>
-                <input 
-                  type="number" required step="0.1"
-                  value={form.area_total_ha}
-                  onChange={(e) => setForm({...form, area_total_ha: parseFloat(e.target.value)})}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Municipio</label>
-                <input 
-                  type="text"
-                  value={form.municipio}
-                  onChange={(e) => setForm({...form, municipio: e.target.value})}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                  placeholder="Pereira"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Departamento</label>
-                <input 
-                  type="text"
-                  value={form.departamento}
-                  onChange={(e) => setForm({...form, departamento: e.target.value})}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
-                  placeholder="Risaralda"
-                />
-              </div>
-              <button type="submit" className="w-full bg-emerald-600 text-white py-2 rounded-lg font-semibold hover:bg-emerald-700">
-                + Crear Finca
-              </button>
-            </form>
-          </div>
+      {/* Gráficas Financieras */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Gráfica de Barras (Ingresos vs Egresos) */}
+        <div className="md:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h2 className="text-lg font-semibold text-slate-800 mb-4">Balance de Ingresos vs Egresos</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={dataBalance}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="name" stroke="#64748b" fontSize={12} />
+              <YAxis stroke="#64748b" fontSize={12} tickFormatter={(v) => `${v/1000000}M`} />
+              <Tooltip formatter={(v) => formatCurrency(v)} />
+              <Legend />
+              <Bar dataKey="Ingresos" fill="#10b981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Egresos" fill="#ef4444" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* Lista de Fincas */}
-        <div className="md:col-span-2">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-            <h2 className="text-xl font-semibold text-slate-800 mb-4">Fincas Registradas</h2>
-            {loading ? (
-              <p className="text-slate-400">Cargando...</p>
-            ) : fincas.length === 0 ? (
-              <p className="text-slate-400 italic">Aún no hay fincas registradas. Crea la primera.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 border-b border-slate-200">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold text-slate-600">Nombre</th>
-                      <th className="px-4 py-3 font-semibold text-slate-600">Código</th>
-                      <th className="px-4 py-3 font-semibold text-slate-600">Área (ha)</th>
-                      <th className="px-4 py-3 font-semibold text-slate-600">Ubicación</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {fincas.map((finca) => (
-                      <tr key={finca.id} className="hover:bg-slate-50">
-                        <td className="px-4 py-3 font-medium text-slate-800">{finca.nombre}</td>
-                        <td className="px-4 py-3 text-slate-500">{finca.codigo}</td>
-                        <td className="px-4 py-3 text-slate-500">{finca.area_total_ha}</td>
-                        <td className="px-4 py-3 text-slate-500">{finca.municipio || '—'}, {finca.departamento || '—'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
+        {/* Gráfica de Pastel (Distribución de Gastos) */}
+        <div className="md:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+          <h2 className="text-lg font-semibold text-slate-800 mb-4">Distribución de Gastos</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie data={dataGastos} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                {dataGastos.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip formatter={(v) => formatCurrency(v)} />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Tarjeta de Balance Neto */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 p-6 rounded-xl shadow-lg text-white flex flex-col md:flex-row justify-between items-center">
+        <div className="mb-4 md:mb-0">
+          <p className="text-emerald-100 font-medium text-sm uppercase">Balance Neto del Mes</p>
+          <p className="text-4xl font-bold">{formatCurrency(11000000)}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-emerald-100 text-sm uppercase">Crecimiento vs Mes Anterior</p>
+          <p className="text-3xl font-bold">+15% 📈</p>
         </div>
       </div>
     </div>
