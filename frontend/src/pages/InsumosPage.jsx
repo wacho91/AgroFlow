@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 export default function InsumosPage() {
   const navigate = useNavigate();
   const [insumos, setInsumos] = useState([]);
-  const [form, setForm] = useState({ nombre: '', codigo: '', unidad_medida: 'kg', stock_actual: 0, stock_minimo: 0 });
+  const [form, setForm] = useState({ nombre: '', codigo: '', unidad_medida: 'kg', stock_actual: 0, stock_minimo: 0, costo_promedio: 0 });
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -63,10 +63,10 @@ export default function InsumosPage() {
     setEditingId(insumo.id);
   };
 
-  const handleCancelEdit = () => {
-    setForm({ nombre: '', codigo: '', unidad_medida: 'kg', stock_actual: 0, stock_minimo: 0 });
-    setEditingId(null);
-  };
+    const handleCancelEdit = () => { 
+      setForm({ nombre: '', codigo: '', unidad_medida: 'kg', stock_actual: 0, stock_minimo: 0, costo_promedio: 0 }); 
+      setEditingId(null); 
+    };
 
   const handleDelete = async (id) => {
     // === CONFIRMACIÓN SWEETALERT ===
@@ -128,6 +128,16 @@ export default function InsumosPage() {
                 <div>
                   <label className="block text-sm font-medium text-slate-600 mb-1">Stock Mínimo</label>
                   <input type="number" required step="0.1" value={form.stock_minimo} onChange={(e) => setForm({...form, stock_minimo: parseFloat(e.target.value)})} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500" />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-slate-600 mb-1">Costo Promedio (por unidad)</label>
+                  <input 
+                    type="number" required step="0.01"
+                    value={form.costo_promedio}
+                    onChange={(e) => setForm({...form, costo_promedio: parseFloat(e.target.value)})}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500"
+                    placeholder="0"
+                  />
                 </div>
               </div>
               <div className="flex gap-2">
