@@ -38,29 +38,35 @@ export default function FincasPage() {
     fetchFincas();
   }, []);
 
-  // Función para crear una finca nueva
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      const res = await fetch('http://localhost:8000/api/v1/fincas/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(form)
-      });
-      
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Error al crear la finca');
-      
-      setForm({ nombre: '', codigo: '', area_total_ha: 1, municipio: '', departamento: '' });
-      fetchFincas(); // Refrescamos la lista
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+    // Función para crear una finca nueva
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      setError('');
+      try {
+        const res = await fetch('http://localhost:8000/api/v1/fincas/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(form)
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'Error al crear la finca');
+        
+        setForm({ nombre: '', codigo: '', area_total_ha: 1, municipio: '', departamento: '' });
+        
+        // Separamos la recarga para que un error aquí no borre el éxito de la creación
+        try {
+          await fetchFincas(); 
+        } catch (refreshErr) {
+          console.error("Finca creada, pero hubo un error al refrescar la lista.");
+        }
+      } catch (err) {
+        setError(err.message);
+      }
+    };
 
   return (
     <div className="bg-slate-50 p-8">
