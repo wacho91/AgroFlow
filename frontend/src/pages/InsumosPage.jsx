@@ -150,6 +150,7 @@ export default function InsumosPage() {
                         <th className="px-4 py-3 font-semibold text-slate-600">Código</th>
                         <th className="px-4 py-3 font-semibold text-slate-600">Nombre</th>
                         <th className="px-4 py-3 font-semibold text-slate-600">Stock Actual</th>
+                        <th className="px-4 py-3 font-semibold text-slate-600">Stock Mínimo</th>
                         <th className="px-4 py-3 font-semibold text-slate-600">Alerta</th>
                       </tr>
                     </thead>
@@ -160,9 +161,8 @@ export default function InsumosPage() {
                         const stockMinimo = Number(insumo.stock_minimo);
                         const isLow = stockActual <= stockMinimo;
                         
-                        // Formateamos para que si es entero, no muestre decimales
                         const formattedStock = stockActual % 1 === 0 ? stockActual : stockActual.toFixed(2);
-                        // =============================================================
+                        const formattedMin = stockMinimo % 1 === 0 ? stockMinimo : stockMinimo.toFixed(2);
 
                         return (
                           <tr key={insumo.id} className="hover:bg-slate-50">
@@ -171,6 +171,11 @@ export default function InsumosPage() {
                             <td className="px-4 py-3 text-slate-800 font-medium">
                               {formattedStock} <span className="text-xs text-slate-400">{insumo.unidad_medida}</span>
                             </td>
+                            {/* === NUEVA COLUMNA DE STOCK MÍNIMO === */}
+                            <td className="px-4 py-3 text-slate-500">
+                              {formattedMin} <span className="text-xs text-slate-400">{insumo.unidad_medida}</span>
+                            </td>
+                            {/* ===================================== */}
                             <td className="px-4 py-3">
                               {isLow ? (
                                 <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-bold">⚠️ Reabastecer</span>
