@@ -49,3 +49,25 @@ async def create_finca(finca: FincaCreate, db: AsyncSession = Depends(get_db)):
     await db.commit()
     await db.refresh(nueva_finca)
     return nueva_finca
+
+@router.put("/{finca_id}", response_model=FincaResponse)
+async def update_finca(finca_id: uuid.UUID, finca_update: FincaCreate, db: AsyncSession = Depends(get_db)):
+    finca = await db.get(Finca, finca_id)
+    if not finca:
+        raise HTTPException(status_code=404, detail="Finca no encontrada")
+    
+    for field, value in finca_update.dict().items():
+        setattr(finca, field, value)
+    
+    await db.commit()
+    await db.refresh(finca)
+    return finca
+
+@router.delete("/{finca_id}", status_code=204)
+async def delete_finca(finca_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    finca = await db.get(Finca, finca_id)
+    if not finca:
+        raise HTTPException(status_code=404, detail="Finca no encontrada")
+    await db.delete(finca)
+    await db.commit()
+    return None
