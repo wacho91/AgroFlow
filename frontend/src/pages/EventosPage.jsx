@@ -147,19 +147,33 @@ export default function EventosPage() {
                       <th className="px-4 py-3 font-semibold text-slate-600">Costo Total</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {eventos.map((ev) => (
-                      <tr key={ev.id} className="hover:bg-slate-50">
-                        <td className="px-4 py-3 text-slate-500">{ev.fecha}</td>
-                        <td className="px-4 py-3 font-medium text-slate-800">{ev.descripcion}</td>
-                        <td className="px-4 py-3 text-slate-600">
-                          {Number(ev.cantidad) % 1 === 0 ? Number(ev.cantidad) : Number(ev.cantidad).toFixed(2)}
-                        </td>
-                        <td className="px-4 py-3 font-bold text-violet-600">
-                          ${Number(ev.costo_total).toLocaleString('es-CO')}
-                        </td>
-                      </tr>
-                    ))}
+                    <tbody className="divide-y divide-slate-100">
+                      {eventos.map((ev) => {
+                      // Formateamos la cantidad para que no tenga decimales sobrantes
+                      const cant = Number(ev.cantidad);
+                      const formattedCant = cant % 1 === 0 ? cant : cant.toFixed(2);
+                      
+                      // Formateamos el costo como moneda completa
+                      const costo = Number(ev.costo_total);
+                      const formattedCosto = `$${costo.toLocaleString('es-CO')}`;
+
+                      return (
+                        <tr key={ev.id} className="hover:bg-slate-50">
+                          <td className="px-4 py-3 text-slate-500">{ev.fecha}</td>
+                          <td className="px-4 py-3 font-medium text-slate-800">{ev.descripcion}</td>
+                          {/* === CANTIDAD CON UNIDAD DE MEDIDA === */}
+                          <td className="px-4 py-3 text-slate-600 font-medium">
+                            {formattedCant} <span className="text-xs text-slate-400">{ev.unidad_medida}</span>
+                          </td>
+                          {/* ====================================== */}
+                          {/* === COSTO TOTAL FORMATO MONEDA === */}
+                          <td className="px-4 py-3 font-bold text-violet-600">
+                            {formattedCosto}
+                          </td>
+                          {/* =================================== */}
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
