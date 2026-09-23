@@ -49,7 +49,8 @@ export default function InsumosPage() {
         timerProgressBar: true
       });
       
-      setForm({ nombre: '', codigo: '', unidad_medida: 'kg', stock_actual: 0, stock_minimo: 0 });
+      // Arreglado: Incluye costo_promedio al limpiar el formulario
+      setForm({ nombre: '', codigo: '', unidad_medida: 'kg', stock_actual: 0, stock_minimo: 0, costo_promedio: 0 });
       setEditingId(null);
       fetchInsumos();
     } catch (err) {
@@ -63,10 +64,10 @@ export default function InsumosPage() {
     setEditingId(insumo.id);
   };
 
-    const handleCancelEdit = () => { 
-      setForm({ nombre: '', codigo: '', unidad_medida: 'kg', stock_actual: 0, stock_minimo: 0, costo_promedio: 0 }); 
-      setEditingId(null); 
-    };
+  const handleCancelEdit = () => { 
+    setForm({ nombre: '', codigo: '', unidad_medida: 'kg', stock_actual: 0, stock_minimo: 0, costo_promedio: 0 }); 
+    setEditingId(null); 
+  };
 
   const handleDelete = async (id) => {
     // === CONFIRMACIÓN SWEETALERT ===
@@ -163,6 +164,9 @@ export default function InsumosPage() {
                       <th className="px-4 py-3 font-semibold text-slate-600">Código</th>
                       <th className="px-4 py-3 font-semibold text-slate-600">Nombre</th>
                       <th className="px-4 py-3 font-semibold text-slate-600">Stock Actual</th>
+                      {/* === NUEVA COLUMNA DE COSTO === */}
+                      <th className="px-4 py-3 font-semibold text-slate-600">Costo Unit.</th>
+                      {/* ============================== */}
                       <th className="px-4 py-3 font-semibold text-slate-600">Alerta</th>
                       <th className="px-4 py-3 font-semibold text-slate-600 text-right">Acciones</th>
                     </tr>
@@ -173,6 +177,11 @@ export default function InsumosPage() {
                       const stockMinimo = Number(insumo.stock_minimo);
                       const isLow = stockActual <= stockMinimo;
                       const formattedStock = stockActual % 1 === 0 ? stockActual : stockActual.toFixed(2);
+                      
+                      // === CÁLCULO DEL COSTO ===
+                      const costo = Number(insumo.costo_promedio);
+                      const formattedCosto = costo % 1 === 0 ? costo : costo.toFixed(2);
+                      // ==========================
 
                       return (
                         <tr key={insumo.id} className="hover:bg-slate-50">
@@ -182,6 +191,11 @@ export default function InsumosPage() {
                             {formattedStock} <span className="text-xs text-slate-400">{insumo.unidad_medida}</span>
                             <span className="block text-xs text-slate-400">(Mín: {stockMinimo})</span>
                           </td>
+                          {/* === MOSTRAR EL COSTO UNITARIO === */}
+                          <td className="px-4 py-3 text-slate-600 font-medium">
+                            ${formattedCosto}
+                          </td>
+                          {/* ================================= */}
                           <td className="px-4 py-3">
                             {isLow ? <span className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-bold">⚠️ Reabastecer</span> : <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">Óptimo</span>}
                           </td>
