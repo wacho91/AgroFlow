@@ -26,7 +26,7 @@ class EventoResponse(BaseModel):
     lote_id: uuid.UUID
     descripcion: str
     cantidad: Decimal
-    unidad_medida: Optional[str] = None  # <--- AGREGAR ESTO
+    unidad_medida: Optional[str] = None
     costo_total: Decimal
     class Config:
         from_attributes = True
@@ -52,22 +52,23 @@ async def create_evento(evento: EventoCreate, db: AsyncSession = Depends(get_db)
     if insumo.stock_actual < evento.cantidad:
         raise HTTPException(status_code=400, detail=f"Stock insuficiente. Solo hay {insumo.stock_actual} {insumo.unidad_medida} disponibles.")
     
-    # 3. Calculamos el costo (usando el costo promedio del insumo)
-    costo_unitario = insumo.costo_promedio if insumo.costo_promedio > 0 else Decimal("0")
-    costo_total = costo_unitario * evento.cantidad
+    # 3. Calculamos el costo (Forzamos Decimal para evitar errores de tipo)
+    costo_unitario = Decimal(str(insumo.costo_promedio)) if insumo.costo_promedio and insumo.costo_promedio > 0 else Decimal("0")
+    cantidad = Decimal(str(evento.cantidad))
+    costo_total = costo_unitario * cantidad
     
     # 4. Descontamos el inventario
-    insumo.stock_actual -= evento.cantidad
+    insumo.stock_actual = Decimal(str(insumo.stock_actual)) - cantidad
     
     # 5. Creamos el evento de costo (Event Sourcing)
     nuevo_evento = CostoActividad(
         tenant_id=lote.tenant_id,
         lote_id=lote.id,
-        ciclo_id=None, # Por ahora no tenemos ciclo productivo
+        ciclo_id=None,
         tipo_costo="insumos",
         fecha=date.today(),
         descripcion=f"{evento.descripcion} ({insumo.nombre})",
-        cantidad=evento.cantidad,
+        cantidad=cantidad,
         unidad_medida=insumo.unidad_medida,
         costo_unitario=costo_unitario,
         costo_total=costo_total,
