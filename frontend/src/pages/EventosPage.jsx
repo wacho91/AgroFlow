@@ -63,13 +63,31 @@ export default function EventosPage() {
       });
       
       setForm(prev => ({ ...prev, cantidad: 1, descripcion: 'Aplicación de insumo' }));
-      fetchAllData(); // Refrescamos todo
+      fetchAllData();
     } catch (err) {
       Swal.fire('Error', err.message, 'error');
     }
   };
 
-  const formatCurrency = (value) => `$${Number(value).toLocaleString('es-CO')}`;
+  const handleDelete = async (id) => {
+    Swal.fire({
+      title: '¿Anular evento?',
+      text: "El stock del insumo será devuelto a la bodega.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Sí, eliminar'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await fetch(`http://localhost:8000/api/v1/eventos/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+          Swal.fire('¡Anulado!', 'El evento fue eliminado y el stock devuelto.', 'success');
+          fetchAllData();
+        } catch (err) { Swal.fire('Error', 'No se pudo eliminar.', 'error'); }
+      }
+    });
+  };
 
   return (
     <div>
@@ -145,15 +163,13 @@ export default function EventosPage() {
                       <th className="px-4 py-3 font-semibold text-slate-600">Descripción</th>
                       <th className="px-4 py-3 font-semibold text-slate-600">Cantidad</th>
                       <th className="px-4 py-3 font-semibold text-slate-600">Costo Total</th>
+                      <th className="px-4 py-3 font-semibold text-slate-600 text-right">Acción</th> {/* NUEVA COLUMNA */}
                     </tr>
                   </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {eventos.map((ev) => {
-                      // Formateamos la cantidad para que no tenga decimales sobrantes
+                  <tbody className="divide-y divide-slate-100">
+                    {eventos.map((ev) => {
                       const cant = Number(ev.cantidad);
                       const formattedCant = cant % 1 === 0 ? cant : cant.toFixed(2);
-                      
-                      // Formateamos el costo como moneda completa
                       const costo = Number(ev.costo_total);
                       const formattedCosto = `$${costo.toLocaleString('es-CO')}`;
 
@@ -161,16 +177,17 @@ export default function EventosPage() {
                         <tr key={ev.id} className="hover:bg-slate-50">
                           <td className="px-4 py-3 text-slate-500">{ev.fecha}</td>
                           <td className="px-4 py-3 font-medium text-slate-800">{ev.descripcion}</td>
-                          {/* === CANTIDAD CON UNIDAD DE MEDIDA === */}
                           <td className="px-4 py-3 text-slate-600 font-medium">
                             {formattedCant} <span className="text-xs text-slate-400">{ev.unidad_medida}</span>
                           </td>
-                          {/* ====================================== */}
-                          {/* === COSTO TOTAL FORMATO MONEDA === */}
                           <td className="px-4 py-3 font-bold text-violet-600">
                             {formattedCosto}
                           </td>
-                          {/* =================================== */}
+                          {/* === BOTÓN ELIMINAR === */}
+                          <td className="px-4 py-3 text-right">
+                            <button onClick={() => handleDelete(ev.id)} className="text-red-500 hover:text-red-700 font-medium">Eliminar</button>
+                          </td>
+                          {/* ======================= */}
                         </tr>
                       );
                     })}
