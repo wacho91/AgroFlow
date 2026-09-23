@@ -26,6 +26,7 @@ class EventoResponse(BaseModel):
     lote_id: uuid.UUID
     descripcion: str
     cantidad: Decimal
+    unidad_medida: Optional[str] = None  # <--- AGREGAR ESTO
     costo_total: Decimal
     class Config:
         from_attributes = True
