@@ -47,7 +47,6 @@ export default function EventosPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Preparamos el payload. Si costo_unitario está vacío, mandamos null para que el backend use el del insumo
       const payload = { ...form };
       if (payload.costo_unitario === '') payload.costo_unitario = null;
 
@@ -129,27 +128,27 @@ export default function EventosPage() {
                   {insumos.map(i => <option key={i.id} value={i.id}>{i.nombre} (Stock: {i.stock_actual} {i.unidad_medida})</option>)}
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Cantidad a Aplicar</label>
-                <input 
-                  type="number" required step="0.1" min="0.1"
-                  value={form.cantidad}
-                  onChange={(e) => setForm({...form, cantidad: parseFloat(e.target.value)})}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">Cantidad</label>
+                  <input 
+                    type="number" required step="0.1" min="0.1"
+                    value={form.cantidad}
+                    onChange={(e) => setForm({...form, cantidad: parseFloat(e.target.value)})}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">Costo Unit.</label>
+                  <input 
+                    type="number" step="0.01"
+                    value={form.costo_unitario}
+                    onChange={(e) => setForm({...form, costo_unitario: e.target.value})}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500"
+                    placeholder="Opcional"
+                  />
+                </div>
               </div>
-              {/* === NUEVO CAMPO DE COSTO UNITARIO === */}
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Costo Unitario (Opcional)</label>
-                <input 
-                  type="number" step="0.01"
-                  value={form.costo_unitario}
-                  onChange={(e) => setForm({...form, costo_unitario: e.target.value})}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500"
-                  placeholder="Dejar vacío para usar costo promedio"
-                />
-              </div>
-              {/* ===================================== */}
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Descripción (Opcional)</label>
                 <input 
@@ -178,6 +177,9 @@ export default function EventosPage() {
                       <th className="px-4 py-3 font-semibold text-slate-600">Fecha</th>
                       <th className="px-4 py-3 font-semibold text-slate-600">Descripción</th>
                       <th className="px-4 py-3 font-semibold text-slate-600">Cantidad</th>
+                      {/* === NUEVA COLUMNA === */}
+                      <th className="px-4 py-3 font-semibold text-slate-600">Costo Unit.</th>
+                      {/* ===================== */}
                       <th className="px-4 py-3 font-semibold text-slate-600">Costo Total</th>
                       <th className="px-4 py-3 font-semibold text-slate-600 text-right">Acción</th>
                     </tr>
@@ -186,8 +188,13 @@ export default function EventosPage() {
                     {eventos.map((ev) => {
                       const cant = Number(ev.cantidad);
                       const formattedCant = cant % 1 === 0 ? cant : cant.toFixed(2);
-                      const costo = Number(ev.costo_total);
-                      const formattedCosto = `$${costo.toLocaleString('es-CO')}`;
+                      
+                      // Formateamos el costo unitario y total
+                      const costoUnit = Number(ev.costo_unitario || 0);
+                      const formattedCostoUnit = `$${costoUnit.toLocaleString('es-CO')}`;
+                      
+                      const costoTotal = Number(ev.costo_total);
+                      const formattedCostoTotal = `$${costoTotal.toLocaleString('es-CO')}`;
 
                       return (
                         <tr key={ev.id} className="hover:bg-slate-50">
@@ -196,8 +203,13 @@ export default function EventosPage() {
                           <td className="px-4 py-3 text-slate-600 font-medium">
                             {formattedCant} <span className="text-xs text-slate-400">{ev.unidad_medida}</span>
                           </td>
+                          {/* === MOSTRAR COSTO UNITARIO === */}
+                          <td className="px-4 py-3 text-slate-600">
+                            {formattedCostoUnit}
+                          </td>
+                          {/* ============================== */}
                           <td className="px-4 py-3 font-bold text-violet-600">
-                            {formattedCosto}
+                            {formattedCostoTotal}
                           </td>
                           <td className="px-4 py-3 text-right">
                             <button onClick={() => handleDelete(ev.id)} className="text-red-500 hover:text-red-700 font-medium">Eliminar</button>
