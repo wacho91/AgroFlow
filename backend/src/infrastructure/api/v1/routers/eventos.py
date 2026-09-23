@@ -80,3 +80,19 @@ async def create_evento(evento: EventoCreate, db: AsyncSession = Depends(get_db)
     await db.commit()
     await db.refresh(nuevo_evento)
     return nuevo_evento
+
+@router.delete("/{evento_id}", status_code=204)
+async def delete_evento(evento_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    evento = await db.get(CostoActividad, evento_id)
+    if not evento:
+        raise HTTPException(status_code=404, detail="Evento no encontrado")
+    
+    # Si el evento viene de un insumo, le devolvemos el stock
+    if evento.origen_tipo == "insumo" and evento.origen_id:
+        insumo = await db.get(Insumo, evento.origen_id)
+        if insumo:
+            insumo.stock_actual = Decimal(str(insumo.stock_actual)) + Decimal(str(evento.cantidad))
+    
+    await db.delete(evento)
+    await db.commit()
+    return None
