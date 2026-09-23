@@ -18,6 +18,7 @@ class EventoCreate(BaseModel):
     lote_id: uuid.UUID
     insumo_id: uuid.UUID
     cantidad: Decimal
+    costo_unitario: Optional[Decimal] = None  # <--- NUEVO CAMPO
     descripcion: Optional[str] = "Aplicación de insumo"
 
 class EventoResponse(BaseModel):
@@ -26,7 +27,7 @@ class EventoResponse(BaseModel):
     lote_id: uuid.UUID
     descripcion: str
     cantidad: Decimal
-    unidad_medida: Optional[str] = None
+    unidad_medida: Optional[str] = None  # <--- AGREGADO PARA EL FRONTEND
     costo_total: Decimal
     class Config:
         from_attributes = True
@@ -52,8 +53,12 @@ async def create_evento(evento: EventoCreate, db: AsyncSession = Depends(get_db)
     if insumo.stock_actual < evento.cantidad:
         raise HTTPException(status_code=400, detail=f"Stock insuficiente. Solo hay {insumo.stock_actual} {insumo.unidad_medida} disponibles.")
     
-    # 3. Calculamos el costo (Forzamos Decimal para evitar errores de tipo)
-    costo_unitario = Decimal(str(insumo.costo_promedio)) if insumo.costo_promedio and insumo.costo_promedio > 0 else Decimal("0")
+    # 3. Calculamos el costo (Si el usuario envía un costo, lo usamos. Si no, usamos el del insumo)
+    if evento.costo_unitario is not None and evento.costo_unitario > 0:
+        costo_unitario = Decimal(str(evento.costo_unitario))
+    else:
+        costo_unitario = Decimal(str(insumo.costo_promedio)) if insumo.costo_promedio and insumo.costo_promedio > 0 else Decimal("0")
+        
     cantidad = Decimal(str(evento.cantidad))
     costo_total = costo_unitario * cantidad
     

@@ -7,7 +7,7 @@ export default function EventosPage() {
   const [eventos, setEventos] = useState([]);
   const [lotes, setLotes] = useState([]);
   const [insumos, setInsumos] = useState([]);
-  const [form, setForm] = useState({ lote_id: '', insumo_id: '', cantidad: 1, descripcion: 'Aplicación de insumo' });
+  const [form, setForm] = useState({ lote_id: '', insumo_id: '', cantidad: 1, costo_unitario: '', descripcion: 'Aplicación de insumo' });
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem('agroflow_token');
@@ -47,10 +47,14 @@ export default function EventosPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Preparamos el payload. Si costo_unitario está vacío, mandamos null para que el backend use el del insumo
+      const payload = { ...form };
+      if (payload.costo_unitario === '') payload.costo_unitario = null;
+
       const res = await fetch('http://localhost:8000/api/v1/eventos/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(form)
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.detail || 'Ocurrió un error');
@@ -62,7 +66,7 @@ export default function EventosPage() {
         confirmButtonColor: '#7c3aed'
       });
       
-      setForm(prev => ({ ...prev, cantidad: 1, descripcion: 'Aplicación de insumo' }));
+      setForm(prev => ({ ...prev, cantidad: 1, costo_unitario: '', descripcion: 'Aplicación de insumo' }));
       fetchAllData();
     } catch (err) {
       Swal.fire('Error', err.message, 'error');
@@ -134,6 +138,18 @@ export default function EventosPage() {
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500"
                 />
               </div>
+              {/* === NUEVO CAMPO DE COSTO UNITARIO === */}
+              <div>
+                <label className="block text-sm font-medium text-slate-600 mb-1">Costo Unitario (Opcional)</label>
+                <input 
+                  type="number" step="0.01"
+                  value={form.costo_unitario}
+                  onChange={(e) => setForm({...form, costo_unitario: e.target.value})}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500"
+                  placeholder="Dejar vacío para usar costo promedio"
+                />
+              </div>
+              {/* ===================================== */}
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Descripción (Opcional)</label>
                 <input 
@@ -163,7 +179,7 @@ export default function EventosPage() {
                       <th className="px-4 py-3 font-semibold text-slate-600">Descripción</th>
                       <th className="px-4 py-3 font-semibold text-slate-600">Cantidad</th>
                       <th className="px-4 py-3 font-semibold text-slate-600">Costo Total</th>
-                      <th className="px-4 py-3 font-semibold text-slate-600 text-right">Acción</th> {/* NUEVA COLUMNA */}
+                      <th className="px-4 py-3 font-semibold text-slate-600 text-right">Acción</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -183,11 +199,9 @@ export default function EventosPage() {
                           <td className="px-4 py-3 font-bold text-violet-600">
                             {formattedCosto}
                           </td>
-                          {/* === BOTÓN ELIMINAR === */}
                           <td className="px-4 py-3 text-right">
                             <button onClick={() => handleDelete(ev.id)} className="text-red-500 hover:text-red-700 font-medium">Eliminar</button>
                           </td>
-                          {/* ======================= */}
                         </tr>
                       );
                     })}
