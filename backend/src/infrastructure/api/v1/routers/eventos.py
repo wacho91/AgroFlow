@@ -28,6 +28,7 @@ class EventoResponse(BaseModel):
     descripcion: str
     cantidad: Decimal
     unidad_medida: Optional[str] = None  # <--- AGREGADO PARA EL FRONTEND
+    costo_unitario: Optional[Decimal] = None  # <--- AGREGAR ESTO
     costo_total: Decimal
     class Config:
         from_attributes = True
