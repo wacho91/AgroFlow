@@ -46,3 +46,27 @@ async def create_jornalero(jornalero: JornaleroCreate, db: AsyncSession = Depend
     await db.commit()
     await db.refresh(nuevo_jornalero)
     return nuevo_jornalero
+
+# === NUEVAS RUTAS: ACTUALIZAR Y ELIMINAR ===
+@router.patch("/{jornalero_id}", response_model=JornaleroResponse)
+async def update_jornalero(jornalero_id: uuid.UUID, payload: JornaleroCreate, db: AsyncSession = Depends(get_db)):
+    db_jornalero = await db.get(Jornalero, jornalero_id)
+    if not db_jornalero:
+        raise HTTPException(status_code=404, detail="Jornalero no encontrado")
+    
+    for field, value in payload.dict().items():
+        setattr(db_jornalero, field, value)
+    
+    await db.commit()
+    await db.refresh(db_jornalero)
+    return db_jornalero
+
+@router.delete("/{jornalero_id}", status_code=204)
+async def delete_jornalero(jornalero_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    db_jornalero = await db.get(Jornalero, jornalero_id)
+    if not db_jornalero:
+        raise HTTPException(status_code=404, detail="Jornalero no encontrado")
+    
+    await db.delete(db_jornalero)
+    await db.commit()
+    return None
