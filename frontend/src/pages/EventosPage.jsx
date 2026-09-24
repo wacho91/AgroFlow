@@ -7,7 +7,9 @@ export default function EventosPage() {
   const [eventos, setEventos] = useState([]);
   const [lotes, setLotes] = useState([]);
   const [insumos, setInsumos] = useState([]);
-  const [form, setForm] = useState({ lote_id: '', insumo_id: '', cantidad: 1, costo_unitario: '', descripcion: 'Aplicación de insumo' });
+  const [jornaleros, setJornaleros] = useState([]);
+  const [tipoEvento, setTipoEvento] = useState('insumo'); // 'insumo' o 'jornal'
+  const [form, setForm] = useState({ lote_id: '', insumo_id: '', jornalero_id: '', cantidad: 1, costo_unitario: '', descripcion: 'Aplicación de insumo' });
   const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem('agroflow_token');
@@ -15,22 +17,26 @@ export default function EventosPage() {
   const fetchAllData = async () => {
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
-      const [resEventos, resLotes, resInsumos] = await Promise.all([
+      const [resEventos, resLotes, resInsumos, resJornaleros] = await Promise.all([
         fetch('http://localhost:8000/api/v1/eventos/', { headers }),
         fetch('http://localhost:8000/api/v1/lotes/', { headers }),
-        fetch('http://localhost:8000/api/v1/insumos/', { headers })
+        fetch('http://localhost:8000/api/v1/insumos/', { headers }),
+        fetch('http://localhost:8000/api/v1/jornaleros/', { headers })
       ]);
 
       const dataEventos = resEventos.ok ? await resEventos.json() : [];
       const dataLotes = resLotes.ok ? await resLotes.json() : [];
       const dataInsumos = resInsumos.ok ? await resInsumos.json() : [];
+      const dataJornaleros = resJornaleros.ok ? await resJornaleros.json() : [];
 
       setEventos(dataEventos);
       setLotes(dataLotes);
       setInsumos(dataInsumos);
+      setJornaleros(dataJornaleros);
 
       if (dataLotes.length > 0) setForm(prev => ({ ...prev, lote_id: dataLotes[0].id }));
       if (dataInsumos.length > 0) setForm(prev => ({ ...prev, insumo_id: dataInsumos[0].id }));
+      if (dataJornaleros.length > 0) setForm(prev => ({ ...prev, jornalero_id: dataJornaleros[0].id }));
 
     } catch (err) {
       Swal.fire('Error', 'No se pudieron cargar los datos', 'error');
@@ -44,11 +50,24 @@ export default function EventosPage() {
     fetchAllData();
   }, []);
 
+  const handleTipoChange = (tipo) => {
+    setTipoEvento(tipo);
+    if (tipo === 'insumo') {
+      setForm(prev => ({ ...prev, jornalero_id: '', descripcion: 'Aplicación de insumo' }));
+    } else {
+      setForm(prev => ({ ...prev, insumo_id: '', descripcion: 'Pago de mano de obra' }));
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const payload = { ...form };
       if (payload.costo_unitario === '') payload.costo_unitario = null;
+      
+      // Limpiamos el payload según el tipo
+      if (tipoEvento === 'insumo') delete payload.jornalero_id;
+      else delete payload.insumo_id;
 
       const res = await fetch('http://localhost:8000/api/v1/eventos/', {
         method: 'POST',
@@ -61,11 +80,11 @@ export default function EventosPage() {
       Swal.fire({
         icon: 'success',
         title: '¡Evento Registrado!',
-        html: `Insumo aplicado y stock actualizado.<br><b>Costo generado: $${Number(data.costo_total).toLocaleString('es-CO')}</b>`,
+        html: `Costo generado: <b>$${Number(data.costo_total).toLocaleString('es-CO')}</b>`,
         confirmButtonColor: '#7c3aed'
       });
       
-      setForm(prev => ({ ...prev, cantidad: 1, costo_unitario: '', descripcion: 'Aplicación de insumo' }));
+      setForm(prev => ({ ...prev, cantidad: 1, costo_unitario: '' }));
       fetchAllData();
     } catch (err) {
       Swal.fire('Error', err.message, 'error');
@@ -75,17 +94,15 @@ export default function EventosPage() {
   const handleDelete = async (id) => {
     Swal.fire({
       title: '¿Anular evento?',
-      text: "El stock del insumo será devuelto a la bodega.",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#64748b',
+      text: "Si era insumo, el stock será devuelto.",
+      icon: 'warning', showCancelButton: true,
+      confirmButtonColor: '#d33', cancelButtonColor: '#64748b',
       confirmButtonText: 'Sí, eliminar'
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
           await fetch(`http://localhost:8000/api/v1/eventos/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
-          Swal.fire('¡Anulado!', 'El evento fue eliminado y el stock devuelto.', 'success');
+          Swal.fire('¡Anulado!', 'El evento fue eliminado.', 'success');
           fetchAllData();
         } catch (err) { Swal.fire('Error', 'No se pudo eliminar.', 'error'); }
       }
@@ -96,76 +113,65 @@ export default function EventosPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-violet-700">Eventos Agrícolas 🌩️</h1>
-        <p className="text-slate-500">Aplica insumos a tus lotes y calcula costos automáticamente.</p>
+        <p className="text-slate-500">Aplica insumos o registra pagos de mano de obra.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        
-        {/* Formulario de Evento */}
         <div className="md:col-span-1">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <h2 className="text-xl font-semibold text-slate-800 mb-4">Nuevo Evento</h2>
+            
+            {/* Toggle Insumo / Mano de Obra */}
+            <div className="flex gap-2 mb-4">
+              <button type="button" onClick={() => handleTipoChange('insumo')} className={`flex-1 py-2 rounded-lg font-semibold ${tipoEvento === 'insumo' ? 'bg-sky-600 text-white' : 'bg-slate-100 text-slate-600'}`}>🧪 Insumo</button>
+              <button type="button" onClick={() => handleTipoChange('jornal')} className={`flex-1 py-2 rounded-lg font-semibold ${tipoEvento === 'jornal' ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-600'}`}>👷‍♂️ Mano de Obra</button>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-600 mb-1">Lote (Destino)</label>
-                <select 
-                  value={form.lote_id}
-                  onChange={(e) => setForm({...form, lote_id: e.target.value})}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500 bg-white"
-                  required
-                >
+                <select value={form.lote_id} onChange={(e) => setForm({...form, lote_id: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500 bg-white" required>
                   {lotes.map(l => <option key={l.id} value={l.id}>{l.nombre}</option>)}
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Insumo a Aplicar</label>
-                <select 
-                  value={form.insumo_id}
-                  onChange={(e) => setForm({...form, insumo_id: e.target.value})}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500 bg-white"
-                  required
-                >
-                  {insumos.map(i => <option key={i.id} value={i.id}>{i.nombre} (Stock: {i.stock_actual} {i.unidad_medida})</option>)}
-                </select>
-              </div>
+
+              {tipoEvento === 'insumo' ? (
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">Insumo a Aplicar</label>
+                  <select value={form.insumo_id} onChange={(e) => setForm({...form, insumo_id: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500 bg-white" required>
+                    {insumos.map(i => <option key={i.id} value={i.id}>{i.nombre} (Stock: {i.stock_actual})</option>)}
+                  </select>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">Jornalero</label>
+                  <select value={form.jornalero_id} onChange={(e) => setForm({...form, jornalero_id: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500 bg-white" required>
+                    {jornaleros.map(j => <option key={j.id} value={j.id}>{j.nombre_completo}</option>)}
+                  </select>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-1">Cantidad</label>
-                  <input 
-                    type="number" required step="0.1" min="0.1"
-                    value={form.cantidad}
-                    onChange={(e) => setForm({...form, cantidad: parseFloat(e.target.value)})}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500"
-                  />
+                  <label className="block text-sm font-medium text-slate-600 mb-1">{tipoEvento === 'insumo' ? 'Cantidad' : 'Días/Kilos'}</label>
+                  <input type="number" required step="0.1" min="0.1" value={form.cantidad} onChange={(e) => setForm({...form, cantidad: parseFloat(e.target.value)})} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-600 mb-1">Costo Unit.</label>
-                  <input 
-                    type="number" step="0.01"
-                    value={form.costo_unitario}
-                    onChange={(e) => setForm({...form, costo_unitario: e.target.value})}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500"
-                    placeholder="Opcional"
-                  />
+                  <input type="number" step="0.01" value={form.costo_unitario} onChange={(e) => setForm({...form, costo_unitario: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500" placeholder="Opcional" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-600 mb-1">Descripción (Opcional)</label>
-                <input 
-                  type="text"
-                  value={form.descripcion}
-                  onChange={(e) => setForm({...form, descripcion: e.target.value})}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500"
-                />
+                <label className="block text-sm font-medium text-slate-600 mb-1">Descripción</label>
+                <input type="text" value={form.descripcion} onChange={(e) => setForm({...form, descripcion: e.target.value})} className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-violet-500" />
               </div>
               <button type="submit" className="w-full bg-violet-600 text-white py-2 rounded-lg font-semibold hover:bg-violet-700">
-                ⚡ Aplicar Insumo
+                ⚡ Registrar Evento
               </button>
             </form>
           </div>
         </div>
 
-        {/* Historial de Eventos */}
         <div className="md:col-span-2">
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <h2 className="text-xl font-semibold text-slate-800 mb-4">Historial de Costos por Lote</h2>
@@ -176,10 +182,8 @@ export default function EventosPage() {
                     <tr>
                       <th className="px-4 py-3 font-semibold text-slate-600">Fecha</th>
                       <th className="px-4 py-3 font-semibold text-slate-600">Descripción</th>
-                      <th className="px-4 py-3 font-semibold text-slate-600">Cantidad</th>
-                      {/* === NUEVA COLUMNA === */}
+                      <th className="px-4 py-3 font-semibold text-slate-600">Cant.</th>
                       <th className="px-4 py-3 font-semibold text-slate-600">Costo Unit.</th>
-                      {/* ===================== */}
                       <th className="px-4 py-3 font-semibold text-slate-600">Costo Total</th>
                       <th className="px-4 py-3 font-semibold text-slate-600 text-right">Acción</th>
                     </tr>
@@ -188,13 +192,8 @@ export default function EventosPage() {
                     {eventos.map((ev) => {
                       const cant = Number(ev.cantidad);
                       const formattedCant = cant % 1 === 0 ? cant : cant.toFixed(2);
-                      
-                      // Formateamos el costo unitario y total
                       const costoUnit = Number(ev.costo_unitario || 0);
-                      const formattedCostoUnit = `$${costoUnit.toLocaleString('es-CO')}`;
-                      
                       const costoTotal = Number(ev.costo_total);
-                      const formattedCostoTotal = `$${costoTotal.toLocaleString('es-CO')}`;
 
                       return (
                         <tr key={ev.id} className="hover:bg-slate-50">
@@ -203,14 +202,8 @@ export default function EventosPage() {
                           <td className="px-4 py-3 text-slate-600 font-medium">
                             {formattedCant} <span className="text-xs text-slate-400">{ev.unidad_medida}</span>
                           </td>
-                          {/* === MOSTRAR COSTO UNITARIO === */}
-                          <td className="px-4 py-3 text-slate-600">
-                            {formattedCostoUnit}
-                          </td>
-                          {/* ============================== */}
-                          <td className="px-4 py-3 font-bold text-violet-600">
-                            {formattedCostoTotal}
-                          </td>
+                          <td className="px-4 py-3 text-slate-600">${costoUnit.toLocaleString('es-CO')}</td>
+                          <td className="px-4 py-3 font-bold text-violet-600">${costoTotal.toLocaleString('es-CO')}</td>
                           <td className="px-4 py-3 text-right">
                             <button onClick={() => handleDelete(ev.id)} className="text-red-500 hover:text-red-700 font-medium">Eliminar</button>
                           </td>
