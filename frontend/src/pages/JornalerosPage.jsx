@@ -124,8 +124,8 @@ export default function JornalerosPage() {
                 </select>
               </div>
               <div className="flex gap-2">
-                <button type="submit" className="w-full bg-rose-600 text-white py-2 rounded-lg font-semibold hover:bg-rose-700">
-                  {editingId ? '✓ Actualizar' : '+ Crear Jornalero'}
+                <button type="submit" disabled={saving} className="w-full bg-rose-600 text-white py-2 rounded-lg font-semibold hover:bg-rose-700 disabled:opacity-50">
+                    {saving ? 'Guardando...' : (editingId ? '✓ Actualizar' : '+ Crear Jornalero')}
                 </button>
                 {editingId && (
                   <button type="button" onClick={handleCancelEdit} className="bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-semibold hover:bg-slate-300">✕</button>
