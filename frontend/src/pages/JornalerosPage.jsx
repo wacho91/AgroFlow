@@ -8,6 +8,7 @@ export default function JornalerosPage() {
   const [form, setForm] = useState({ nombre_completo: '', documento: '', telefono: '', tipo: 'temporal' });
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
 
   const token = localStorage.getItem('agroflow_token');
 
@@ -29,17 +30,17 @@ export default function JornalerosPage() {
 
   useEffect(() => { if (!token) { navigate('/login'); return; } fetchJornaleros(); }, []);
 
-  const handleSubmit = async (e) => {
+    const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true); // <- Bloqueamos el botón
     const method = editingId ? 'PUT' : 'POST';
-    // Si es PUT, usamos PATCH en la URL por cómo está hecho el router complex
     const url = editingId 
       ? `http://localhost:8000/api/v1/jornaleros/${editingId}` 
       : 'http://localhost:8000/api/v1/jornaleros/';
     
     try {
       const res = await fetch(url, {
-        method: editingId ? 'PATCH' : 'POST', // El router complex usa PATCH para actualizar
+        method: editingId ? 'PATCH' : 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(form)
       });
@@ -52,6 +53,8 @@ export default function JornalerosPage() {
       fetchJornaleros();
     } catch (err) {
       Swal.fire('Error', err.message, 'error');
+    } finally {
+      setSaving(false); // <- Desbloqueamos el botón
     }
   };
 
