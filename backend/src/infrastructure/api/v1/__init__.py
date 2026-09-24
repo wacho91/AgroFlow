@@ -78,4 +78,12 @@ except ImportError:
     pass
 # ======================================
 
+# === NUEVA RUTA DE JORNALEROS ===
+try:
+    from .routers import jornaleros
+    api_router.include_router(jornaleros.router, prefix="/jornaleros", tags=["Jornaleros"])
+except ImportError:
+    pass
+# ================================
+
 router = api_router
