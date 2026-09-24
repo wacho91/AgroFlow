@@ -87,7 +87,13 @@ export default function EventosPage() {
       setForm(prev => ({ ...prev, cantidad: 1, costo_unitario: '' }));
       fetchAllData();
     } catch (err) {
-      Swal.fire('Error', err.message, 'error');
+      let errorMsg = 'Ocurrió un error';
+      if (err.message.includes('[object Object]')) {
+        errorMsg = 'El backend rechazó los datos. Revisa que los campos estén llenos.';
+      } else {
+        errorMsg = err.message;
+      }
+      Swal.fire('Error', errorMsg, 'error');
     }
   };
 
