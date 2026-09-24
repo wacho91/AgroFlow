@@ -48,3 +48,8 @@ try:
     from .tesoreria import MovimientoTesoreria
 except ImportError:
     pass
+
+try:
+    from .nomina import Jornalero
+except ImportError:
+    pass
