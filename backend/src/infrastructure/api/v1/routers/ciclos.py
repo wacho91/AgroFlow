@@ -62,14 +62,22 @@ async def create_ciclo(ciclo: CicloCreate, db: AsyncSession = Depends(get_db)):
         codigo=ciclo.codigo,
         nombre=ciclo.nombre or f"Siembra de {cultivo.nombre}",
         fecha_inicio=date.today(),
-        estado=EstadoCiclo.EN_CURSO.value, # Estado: "en_curso"
+        estado=EstadoCiclo.EN_CURSO.value,
         area_sembrada_ha=ciclo.area_sembrada_ha,
-        costo_total=Decimal(str(costo_inicial)), # Iniciamos con el costo que ya tenía el lote
+        costo_total=Decimal(str(costo_inicial)),
         ingreso_total=Decimal("0"),
         margen_bruto=Decimal("0") - Decimal(str(costo_inicial))
     )
     
     db.add(nuevo_ciclo)
-    await db.commit()
+    
+    # === MEJORA: Blindaje contra códigos duplicados ===
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail="Ya existe un ciclo con este código. Usa uno diferente (ej. CIC-002).")
+    # ==================================================
+    
     await db.refresh(nuevo_ciclo)
     return nuevo_ciclo
