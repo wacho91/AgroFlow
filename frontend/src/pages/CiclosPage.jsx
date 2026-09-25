@@ -9,7 +9,7 @@ export default function CiclosPage() {
   const [cultivos, setCultivos] = useState([]);
   const [form, setForm] = useState({ lote_id: '', cultivo_id: '', codigo: '', area_sembrada_ha: 1 });
   const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const token = localStorage.getItem('agroflow_token');
 
@@ -47,7 +47,7 @@ export default function CiclosPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setSaving(true); // Bloqueamos
+    setSaving(true);
     try {
       const res = await fetch('http://localhost:8000/api/v1/ciclos/', {
         method: 'POST',
@@ -69,8 +69,53 @@ export default function CiclosPage() {
     } catch (err) {
       Swal.fire('Error', err.message, 'error');
     } finally {
-      setSaving(false); // Desbloqueamos
+      setSaving(false);
     }
+  };
+
+  // === FUNCIÓN MAGICA DE COSECHAR ===
+  const handleCosechar = async (ciclo) => {
+    Swal.fire({
+      title: 'Registrar Cosecha 🧺',
+      html: `
+        <input type="number" id="kilos" class="swal2-input" placeholder="Kilos cosechados (ej. 100)" step="0.1">
+        <input type="number" id="precio" class="swal2-input" placeholder="Precio por kilo (ej. 5000)" step="0.01">
+      `,
+      confirmButtonText: 'Cosechar y Cerrar Ciclo',
+      confirmButtonColor: '#4f46e5',
+      focusConfirm: false,
+      preConfirm: () => {
+        const kilos = Swal.getPopup().querySelector('#kilos').value;
+        const precio = Swal.getPopup().querySelector('#precio').value;
+        if (!kilos || !precio) {
+          Swal.showValidationMessage('Por favor ingresa ambos datos');
+        }
+        return { produccion_real: parseFloat(kilos), precio_venta: parseFloat(precio) };
+      }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await fetch(`http://localhost:8000/api/v1/ciclos/${ciclo.id}/cosechar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify(result.value)
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || 'Error al cosechar');
+          
+          const ganancia = Number(data.margen_bruto);
+          Swal.fire({
+            icon: 'success',
+            title: '¡Cosecha Registrada!',
+            html: `Ingreso total: <b>$${Number(data.ingreso_total).toLocaleString('es-CO')}</b><br>Ganancia Neta: <b style="color:${ganancia >= 0 ? 'green' : 'red'}">$${ganancia.toLocaleString('es-CO')}</b>`,
+            confirmButtonColor: '#4f46e5'
+          });
+          fetchAllData();
+        } catch (err) {
+          Swal.fire('Error', err.message, 'error');
+        }
+      }
+    });
   };
 
   const formatCurrency = (value) => `$${Number(value).toLocaleString('es-CO')}`;
@@ -128,8 +173,8 @@ export default function CiclosPage() {
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
-                <button type="submit" disabled={saving} className="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50">
-                    {saving ? 'Iniciando...' : '🌱 Iniciar Siembra'}
+              <button type="submit" disabled={saving} className="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50">
+                {saving ? 'Iniciando...' : '🌱 Iniciar Siembra'}
               </button>
             </form>
           </div>
@@ -149,6 +194,7 @@ export default function CiclosPage() {
                       <th className="px-4 py-3 font-semibold text-slate-600">Costos</th>
                       <th className="px-4 py-3 font-semibold text-slate-600">Ingresos</th>
                       <th className="px-4 py-3 font-semibold text-slate-600">Margen</th>
+                      <th className="px-4 py-3 font-semibold text-slate-600 text-right">Acción</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -169,6 +215,13 @@ export default function CiclosPage() {
                           <td className="px-4 py-3 text-emerald-500 font-medium">{formatCurrency(ciclo.ingreso_total)}</td>
                           <td className={`px-4 py-3 font-bold ${margenColor}`}>
                             {formatCurrency(margen)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {ciclo.estado === 'en_curso' && (
+                              <button onClick={() => handleCosechar(ciclo)} className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-xs font-semibold hover:bg-indigo-200">
+                                🧺 Cosechar
+                              </button>
+                            )}
                           </td>
                         </tr>
                       );
