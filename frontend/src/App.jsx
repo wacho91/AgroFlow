@@ -9,6 +9,7 @@ import CultivosPage from './pages/CultivosPage';
 import TesoreriaPage from './pages/TesoreriaPage';
 import EventosPage from './pages/EventosPage';
 import JornalerosPage from './pages/JornalerosPage';
+import CiclosPage from './pages/CiclosPage';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="cultivos" element={<CultivosPage />} />
           <Route path="tesoreria" element={<TesoreriaPage />} />
           <Route path="jornaleros" element={<JornalerosPage />} />
+          <Route path="ciclos" element={<CiclosPage />} />
           <Route path="eventos" element={<EventosPage />} />
         </Route>
         
