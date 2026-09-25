@@ -86,4 +86,12 @@ except ImportError:
     pass
 # ================================
 
+# === NUEVA RUTA DE CICLOS PRODUCTIVOS ===
+try:
+    from .routers import ciclos
+    api_router.include_router(ciclos.router, prefix="/ciclos", tags=["Ciclos Productivos"])
+except ImportError:
+    pass
+# ========================================
+
 router = api_router
