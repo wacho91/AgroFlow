@@ -216,13 +216,17 @@ export default function CiclosPage() {
                           <td className={`px-4 py-3 font-bold ${margenColor}`}>
                             {formatCurrency(margen)}
                           </td>
+                            {/* === BOTÓN COSECHAR O ETIQUETA FINALIZADO === */}
                           <td className="px-4 py-3 text-right">
-                            {ciclo.estado === 'en_curso' && (
+                            {ciclo.estado === 'en_curso' ? (
                               <button onClick={() => handleCosechar(ciclo)} className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-xs font-semibold hover:bg-indigo-200">
                                 🧺 Cosechar
                               </button>
+                            ) : (
+                              <span className="text-xs text-slate-400 italic">✔️ Finalizado</span>
                             )}
                           </td>
+                          {/* ============================================ */}
                         </tr>
                       );
                     })}
