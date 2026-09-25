@@ -9,6 +9,7 @@ export default function CiclosPage() {
   const [cultivos, setCultivos] = useState([]);
   const [form, setForm] = useState({ lote_id: '', cultivo_id: '', codigo: '', area_sembrada_ha: 1 });
   const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
 
   const token = localStorage.getItem('agroflow_token');
 
@@ -46,6 +47,7 @@ export default function CiclosPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSaving(true); // Bloqueamos
     try {
       const res = await fetch('http://localhost:8000/api/v1/ciclos/', {
         method: 'POST',
@@ -66,6 +68,8 @@ export default function CiclosPage() {
       fetchAllData();
     } catch (err) {
       Swal.fire('Error', err.message, 'error');
+    } finally {
+      setSaving(false); // Desbloqueamos
     }
   };
 

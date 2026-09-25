@@ -6,6 +6,7 @@ from typing import Optional
 from decimal import Decimal
 from datetime import date
 import uuid
+from sqlalchemy.exc import IntegrityError
 
 from .....database import get_db
 from .....models.costos import CicloProductivo, Lote, Cultivo, CostoActividad, EstadoCiclo
