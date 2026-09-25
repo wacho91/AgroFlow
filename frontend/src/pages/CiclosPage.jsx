@@ -128,8 +128,8 @@ export default function CiclosPage() {
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
-              <button type="submit" className="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700">
-                🌱 Iniciar Siembra
+                <button type="submit" disabled={saving} className="w-full bg-indigo-600 text-white py-2 rounded-lg font-semibold hover:bg-indigo-700 disabled:opacity-50">
+                    {saving ? 'Iniciando...' : '🌱 Iniciar Siembra'}
               </button>
             </form>
           </div>
