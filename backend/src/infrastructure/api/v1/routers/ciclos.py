@@ -31,6 +31,11 @@ class CicloResponse(CicloCreate):
     class Config:
         from_attributes = True
 
+# === NUEVO SCHEMA PARA LA COSECHA ===
+class CosechaCreate(BaseModel):
+    produccion_real: Decimal
+    precio_venta: Decimal
+
 # === ENDPOINTS ===
 @router.get("/", response_model=list[CicloResponse])
 async def get_ciclos(db: AsyncSession = Depends(get_db)):
@@ -71,13 +76,38 @@ async def create_ciclo(ciclo: CicloCreate, db: AsyncSession = Depends(get_db)):
     
     db.add(nuevo_ciclo)
     
-    # === MEJORA: Blindaje contra códigos duplicados ===
+    # Blindaje contra códigos duplicados
     try:
         await db.commit()
     except IntegrityError:
         await db.rollback()
         raise HTTPException(status_code=400, detail="Ya existe un ciclo con este código. Usa uno diferente (ej. CIC-002).")
-    # ==================================================
     
     await db.refresh(nuevo_ciclo)
     return nuevo_ciclo
+
+# === NUEVO ENDPOINT: REGISTRAR COSECHA ===
+@router.post("/{ciclo_id}/cosechar", response_model=CicloResponse)
+async def registrar_cosecha(ciclo_id: uuid.UUID, cosecha: CosechaCreate, db: AsyncSession = Depends(get_db)):
+    ciclo = await db.get(CicloProductivo, ciclo_id)
+    if not ciclo:
+        raise HTTPException(status_code=404, detail="Ciclo no encontrado")
+    
+    if ciclo.estado == EstadoCiclo.CERRADO.value:
+        raise HTTPException(status_code=400, detail="Este ciclo ya está cerrado y cosechado.")
+
+    # 1. Calculamos el ingreso total (Kilos * Precio)
+    produccion = Decimal(str(cosecha.produccion_real))
+    precio = Decimal(str(cosecha.precio_venta))
+    ingreso_total = produccion * precio
+
+    # 2. Actualizamos el ciclo
+    ciclo.produccion_real = produccion
+    ciclo.ingreso_total = ingreso_total
+    ciclo.margen_bruto = ingreso_total - Decimal(str(ciclo.costo_total))
+    ciclo.estado = EstadoCiclo.CERRADO.value # Cambiamos el estado a "cerrado"
+    ciclo.fecha_fin_real = date.today()
+
+    await db.commit()
+    await db.refresh(ciclo)
+    return ciclo
