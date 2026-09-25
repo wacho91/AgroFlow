@@ -10,6 +10,9 @@ from sqlalchemy.exc import IntegrityError
 
 from .....database import get_db
 from .....models.costos import CicloProductivo, Lote, Cultivo, CostoActividad, EstadoCiclo
+# === NUEVO IMPORT: Modelo de Tesorería ===
+from .....models.tesoreria import MovimientoTesoreria
+# =========================================
 
 router = APIRouter()
 
@@ -31,7 +34,6 @@ class CicloResponse(CicloCreate):
     class Config:
         from_attributes = True
 
-# === NUEVO SCHEMA PARA LA COSECHA ===
 class CosechaCreate(BaseModel):
     produccion_real: Decimal
     precio_venta: Decimal
@@ -44,22 +46,18 @@ async def get_ciclos(db: AsyncSession = Depends(get_db)):
 
 @router.post("/", response_model=CicloResponse)
 async def create_ciclo(ciclo: CicloCreate, db: AsyncSession = Depends(get_db)):
-    # 1. Validamos que el lote exista
     lote = await db.get(Lote, ciclo.lote_id)
     if not lote:
         raise HTTPException(status_code=404, detail="Lote no encontrado")
     
-    # 2. Validamos que el cultivo exista
     cultivo = await db.get(Cultivo, ciclo.cultivo_id)
     if not cultivo:
         raise HTTPException(status_code=404, detail="Cultivo no encontrado")
     
-    # 3. Magia financiera: Calculamos el costo que el lote ya lleva acumulado
     stmt_costos = select(func.sum(CostoActividad.costo_total)).where(CostoActividad.lote_id == lote.id)
     result_costos = await db.execute(stmt_costos)
     costo_inicial = result_costos.scalar() or Decimal("0")
     
-    # 4. Creamos el ciclo productivo (La siembra)
     nuevo_ciclo = CicloProductivo(
         tenant_id=lote.tenant_id,
         lote_id=lote.id,
@@ -76,7 +74,6 @@ async def create_ciclo(ciclo: CicloCreate, db: AsyncSession = Depends(get_db)):
     
     db.add(nuevo_ciclo)
     
-    # Blindaje contra códigos duplicados
     try:
         await db.commit()
     except IntegrityError:
@@ -86,7 +83,7 @@ async def create_ciclo(ciclo: CicloCreate, db: AsyncSession = Depends(get_db)):
     await db.refresh(nuevo_ciclo)
     return nuevo_ciclo
 
-# === NUEVO ENDPOINT: REGISTRAR COSECHA ===
+# === ENDPOINT: REGISTRAR COSECHA (CON MAGIA FINANCIERA) ===
 @router.post("/{ciclo_id}/cosechar", response_model=CicloResponse)
 async def registrar_cosecha(ciclo_id: uuid.UUID, cosecha: CosechaCreate, db: AsyncSession = Depends(get_db)):
     ciclo = await db.get(CicloProductivo, ciclo_id)
@@ -105,8 +102,19 @@ async def registrar_cosecha(ciclo_id: uuid.UUID, cosecha: CosechaCreate, db: Asy
     ciclo.produccion_real = produccion
     ciclo.ingreso_total = ingreso_total
     ciclo.margen_bruto = ingreso_total - Decimal(str(ciclo.costo_total))
-    ciclo.estado = EstadoCiclo.CERRADO.value # Cambiamos el estado a "cerrado"
+    ciclo.estado = EstadoCiclo.CERRADO.value
     ciclo.fecha_fin_real = date.today()
+
+    # 3. === MAGIA FINANCIERA: Registramos el ingreso en TESORERÍA ===
+    nuevo_ingreso = MovimientoTesoreria(
+        tenant_id=ciclo.tenant_id,
+        fecha=date.today(),
+        tipo="ingreso",
+        concepto=f"Venta de Cosecha - {ciclo.nombre}",
+        monto=ingreso_total
+    )
+    db.add(nuevo_ingreso)
+    # ===============================================================
 
     await db.commit()
     await db.refresh(ciclo)
