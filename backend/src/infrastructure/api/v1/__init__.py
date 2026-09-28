@@ -94,12 +94,12 @@ except ImportError:
     pass
 # ========================================
 
-# === RUTA DEL CLIMA ===
+# === RUTA DEL CLIMA (Destapando el error real) ===
 try:
-    from .routers import clima
-    api_router.include_router(clima.router, prefix="/clima", tags=["Clima"])
-except ImportError as e:
-    print(f"Error cargando clima: {e}")
-# =======================
+    from .routers.clima import router as clima_router
+    api_router.include_router(clima_router, prefix="/clima", tags=["Clima"])
+except Exception as e:
+    print(f"Error real cargando clima: {e}")
+# =================================================
 
 router = api_router

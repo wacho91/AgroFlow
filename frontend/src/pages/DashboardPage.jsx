@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 export default function DashboardPage() {
   const [stats, setStats] = useState({ fincas: 0, lotes: 0, insumos: 0, cultivos: 0 });
   const [finanzas, setFinanzas] = useState({ ingresos: 0, egresos: 0, balance: 0, dataBalance: [], dataGastos: [] });
+  const [clima, setClima] = useState(null);
   const token = localStorage.getItem('agroflow_token');
 
   useEffect(() => {
@@ -12,13 +13,13 @@ export default function DashboardPage() {
       try {
         const headers = { 'Authorization': `Bearer ${token}` };
         
-        // 1. Traemos todos los datos operativos y financieros
-        const [resFincas, resLotes, resInsumos, resCultivos, resFin] = await Promise.all([
+        const [resFincas, resLotes, resInsumos, resCultivos, resFin, resClima] = await Promise.all([
           fetch('http://localhost:8000/api/v1/fincas/', { headers }),
           fetch('http://localhost:8000/api/v1/lotes/', { headers }),
           fetch('http://localhost:8000/api/v1/insumos/', { headers }),
           fetch('http://localhost:8000/api/v1/cultivos/', { headers }),
-          fetch('http://localhost:8000/api/v1/tesoreria/', { headers })
+          fetch('http://localhost:8000/api/v1/tesoreria/', { headers }),
+          fetch('http://localhost:8000/api/v1/clima/', { headers })
         ]);
 
         const dataFincas = resFincas.ok ? await resFincas.json() : [];
@@ -26,6 +27,11 @@ export default function DashboardPage() {
         const dataInsumos = resInsumos.ok ? await resInsumos.json() : [];
         const dataCultivos = resCultivos.ok ? await resCultivos.json() : [];
         const dataFin = resFin.ok ? await resFin.json() : [];
+        
+        if (resClima.ok) {
+          const dataClima = await resClima.json();
+          setClima(dataClima);
+        }
 
         setStats({
           fincas: dataFincas.length,
@@ -34,22 +40,17 @@ export default function DashboardPage() {
           cultivos: dataCultivos.length
         });
 
-        // 2. Procesamos los datos financieros
-        let totalIngresos = 0;
-        let totalEgresos = 0;
-        const mesesMap = {};
-        const gastosMap = {};
+        let totalIngresos = 0, totalEgresos = 0;
+        const mesesMap = {}, gastosMap = {};
         const nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 
         dataFin.forEach(mov => {
           const monto = Number(mov.monto);
-          const fecha = new Date(mov.fecha + 'T00:00:00'); // Evita problemas de zona horaria
+          const fecha = new Date(mov.fecha + 'T00:00:00');
           const mesKey = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, '0')}`;
           const mesNombre = nombresMeses[fecha.getMonth()];
 
-          if (!mesesMap[mesKey]) {
-            mesesMap[mesKey] = { name: mesNombre, Ingresos: 0, Egresos: 0 };
-          }
+          if (!mesesMap[mesKey]) mesesMap[mesKey] = { name: mesNombre, Ingresos: 0, Egresos: 0 };
 
           if (mov.tipo === 'ingreso') {
             totalIngresos += monto;
@@ -57,12 +58,10 @@ export default function DashboardPage() {
           } else {
             totalEgresos += monto;
             mesesMap[mesKey].Egresos += monto;
-            // Agrupar gastos por concepto para la gráfica de pastel
             gastosMap[mov.concepto] = (gastosMap[mov.concepto] || 0) + monto;
           }
         });
 
-        // Convertir maps a arrays para Recharts
         const dataBalance = Object.values(mesesMap).sort((a, b) => a.name > b.name ? 1 : -1);
         const dataGastos = Object.keys(gastosMap).map(k => ({ name: k, value: gastosMap[k] }));
 
@@ -89,6 +88,25 @@ export default function DashboardPage() {
       <h1 className="text-3xl font-bold text-slate-800 mb-2">Dashboard Financiero 📊</h1>
       <p className="text-slate-500 mb-8">Resumen operativo y financiero de tu finca en tiempo real.</p>
       
+      {/* === TARJETA DEL CLIMA === */}
+      {clima && (
+        <div className={`mb-8 p-6 rounded-xl shadow-sm border flex flex-col md:flex-row items-center justify-between ${clima.alerta ? 'bg-amber-50 border-amber-200' : 'bg-sky-50 border-sky-200'}`}>
+          <div className="flex items-center gap-4 mb-4 md:mb-0">
+            <img src={`http://openweathermap.org/img/wn/${clima.icono}@2x.png`} alt="Clima" className="w-20 h-20" />
+            <div>
+              <p className="text-sm text-slate-500 font-medium">Clima actual en {clima.municipio}</p>
+              <h2 className="text-3xl font-bold text-slate-800">{clima.temperatura}°C <span className="text-lg font-normal text-slate-500">({clima.descripcion})</span></h2>
+              <p className="text-sm text-slate-500">Sensación: {clima.sensacion}°C | Humedad: {clima.humedad}%</p>
+            </div>
+          </div>
+          {clima.alerta && (
+            <div className="bg-red-100 text-red-700 px-4 py-3 rounded-lg font-semibold text-center shadow-sm">
+              {clima.alerta}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* KPIs Operativos */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
@@ -111,7 +129,6 @@ export default function DashboardPage() {
 
       {/* Gráficas Financieras */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* Gráfica de Barras (Ingresos vs Egresos) */}
         <div className="md:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <h2 className="text-lg font-semibold text-slate-800 mb-4">Balance de Ingresos vs Egresos</h2>
           <ResponsiveContainer width="100%" height={300}>
@@ -127,7 +144,6 @@ export default function DashboardPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* Gráfica de Pastel (Distribución de Gastos) */}
         <div className="md:col-span-1 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
           <h2 className="text-lg font-semibold text-slate-800 mb-4">Distribución de Gastos</h2>
           {finanzas.dataGastos.length === 0 ? (
