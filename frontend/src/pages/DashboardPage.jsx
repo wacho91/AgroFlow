@@ -4,7 +4,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 export default function DashboardPage() {
   const [stats, setStats] = useState({ fincas: 0, lotes: 0, insumos: 0, cultivos: 0 });
   const [finanzas, setFinanzas] = useState({ ingresos: 0, egresos: 0, balance: 0, dataBalance: [], dataGastos: [] });
-  const [climas, setClimas] = useState([]); // Ahora es una lista de climas
+  const [climas, setClimas] = useState([]);
+  const [currentWeatherIndex, setCurrentWeatherIndex] = useState(0); // Estado para el carrusel
   const token = localStorage.getItem('agroflow_token');
 
   useEffect(() => {
@@ -80,6 +81,10 @@ export default function DashboardPage() {
     fetchAll();
   }, [token]);
 
+  // Lógica del carrusel
+  const nextSlide = () => setCurrentWeatherIndex((prev) => (prev + 1) % climas.length);
+  const prevSlide = () => setCurrentWeatherIndex((prev) => (prev - 1 + climas.length) % climas.length);
+
   const COLORS = ['#10b981', '#f59e0b', '#0ea5e9', '#ef4444', '#8b5cf6', '#ec4899'];
   const formatCurrency = (value) => `$${value.toLocaleString('es-CO')}`;
 
@@ -88,27 +93,49 @@ export default function DashboardPage() {
       <h1 className="text-3xl font-bold text-slate-800 mb-2">Dashboard Financiero 📊</h1>
       <p className="text-slate-500 mb-8">Resumen operativo y financiero de tu finca en tiempo real.</p>
       
-      {/* === SLIDER DE TARJETAS DEL CLIMA === */}
+      {/* === CARRUSEL DE CLIMA === */}
       {climas.length > 0 && (
-        <div className="mb-8 flex gap-6 overflow-x-auto pb-4">
-          {climas.map((clima) => (
-            <div key={clima.finca_id} className={`min-w-[300px] p-6 rounded-xl shadow-sm border flex-shrink-0 ${clima.alerta ? 'bg-amber-50 border-amber-200' : 'bg-sky-50 border-sky-200'}`}>
-              <div className="flex items-center gap-4 mb-4">
-                <img src={`http://openweathermap.org/img/wn/${clima.icono}@2x.png`} alt="Clima" className="w-16 h-16" />
-                <div>
-                  <p className="text-sm text-slate-500 font-medium">{clima.nombre_finca}</p>
-                  <h2 className="text-2xl font-bold text-slate-800">{clima.temperatura}°C</h2>
-                  <p className="text-xs text-slate-500">{clima.descripcion}</p>
-                </div>
+        <div className="mb-8 relative">
+          <div className={`p-6 rounded-xl shadow-sm border flex flex-col md:flex-row items-center justify-between transition-all duration-300 ${climas[currentWeatherIndex].alerta ? 'bg-amber-50 border-amber-200' : 'bg-sky-50 border-sky-200'}`}>
+            <div className="flex items-center gap-4 mb-4 md:mb-0">
+              <img src={`http://openweathermap.org/img/wn/${climas[currentWeatherIndex].icono}@2x.png`} alt="Clima" className="w-20 h-20" />
+              <div>
+                <p className="text-sm text-slate-500 font-medium">Clima actual en {climas[currentWeatherIndex].nombre_finca} ({climas[currentWeatherIndex].municipio})</p>
+                <h2 className="text-3xl font-bold text-slate-800">{climas[currentWeatherIndex].temperatura}°C <span className="text-lg font-normal text-slate-500">({climas[currentWeatherIndex].descripcion})</span></h2>
+                <p className="text-sm text-slate-500">Sensación: {climas[currentWeatherIndex].sensacion}°C | Humedad: {climas[currentWeatherIndex].humedad}%</p>
               </div>
-              <div className="text-xs text-slate-500 mb-2">📍 {clima.municipio} | 💧 Humedad: {clima.humedad}%</div>
-              {clima.alerta && (
-                <div className="bg-red-100 text-red-700 px-3 py-2 rounded-lg font-semibold text-center text-xs">
-                  {clima.alerta}
-                </div>
-              )}
             </div>
-          ))}
+            {climas[currentWeatherIndex].alerta && (
+              <div className="bg-red-100 text-red-700 px-4 py-3 rounded-lg font-semibold text-center shadow-sm">
+                {climas[currentWeatherIndex].alerta}
+              </div>
+            )}
+          </div>
+
+          {/* Flechas del carrusel */}
+          {climas.length > 1 && (
+            <>
+              <button onClick={prevSlide} className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 bg-white p-2 rounded-full shadow-md hover:bg-slate-100 text-slate-600 z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+              </button>
+              <button onClick={nextSlide} className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 bg-white p-2 rounded-full shadow-md hover:bg-slate-100 text-slate-600 z-10">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </>
+          )}
+
+          {/* Puntitos indicadores */}
+          {climas.length > 1 && (
+            <div className="flex justify-center mt-4 gap-2">
+              {climas.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentWeatherIndex(index)}
+                  className={`h-2.5 rounded-full transition-all ${index === currentWeatherIndex ? 'bg-sky-600 w-6' : 'bg-slate-300 hover:bg-slate-400 w-2.5'}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
