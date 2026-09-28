@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 export default function DashboardPage() {
   const [stats, setStats] = useState({ fincas: 0, lotes: 0, insumos: 0, cultivos: 0 });
   const [finanzas, setFinanzas] = useState({ ingresos: 0, egresos: 0, balance: 0, dataBalance: [], dataGastos: [] });
-  const [clima, setClima] = useState(null);
+  const [climas, setClimas] = useState([]); // Ahora es una lista de climas
   const token = localStorage.getItem('agroflow_token');
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function DashboardPage() {
         
         if (resClima.ok) {
           const dataClima = await resClima.json();
-          setClima(dataClima);
+          setClimas(dataClima);
         }
 
         setStats({
@@ -88,22 +88,27 @@ export default function DashboardPage() {
       <h1 className="text-3xl font-bold text-slate-800 mb-2">Dashboard Financiero 📊</h1>
       <p className="text-slate-500 mb-8">Resumen operativo y financiero de tu finca en tiempo real.</p>
       
-      {/* === TARJETA DEL CLIMA === */}
-      {clima && (
-        <div className={`mb-8 p-6 rounded-xl shadow-sm border flex flex-col md:flex-row items-center justify-between ${clima.alerta ? 'bg-amber-50 border-amber-200' : 'bg-sky-50 border-sky-200'}`}>
-          <div className="flex items-center gap-4 mb-4 md:mb-0">
-            <img src={`http://openweathermap.org/img/wn/${clima.icono}@2x.png`} alt="Clima" className="w-20 h-20" />
-            <div>
-              <p className="text-sm text-slate-500 font-medium">Clima actual en {clima.municipio}</p>
-              <h2 className="text-3xl font-bold text-slate-800">{clima.temperatura}°C <span className="text-lg font-normal text-slate-500">({clima.descripcion})</span></h2>
-              <p className="text-sm text-slate-500">Sensación: {clima.sensacion}°C | Humedad: {clima.humedad}%</p>
+      {/* === SLIDER DE TARJETAS DEL CLIMA === */}
+      {climas.length > 0 && (
+        <div className="mb-8 flex gap-6 overflow-x-auto pb-4">
+          {climas.map((clima) => (
+            <div key={clima.finca_id} className={`min-w-[300px] p-6 rounded-xl shadow-sm border flex-shrink-0 ${clima.alerta ? 'bg-amber-50 border-amber-200' : 'bg-sky-50 border-sky-200'}`}>
+              <div className="flex items-center gap-4 mb-4">
+                <img src={`http://openweathermap.org/img/wn/${clima.icono}@2x.png`} alt="Clima" className="w-16 h-16" />
+                <div>
+                  <p className="text-sm text-slate-500 font-medium">{clima.nombre_finca}</p>
+                  <h2 className="text-2xl font-bold text-slate-800">{clima.temperatura}°C</h2>
+                  <p className="text-xs text-slate-500">{clima.descripcion}</p>
+                </div>
+              </div>
+              <div className="text-xs text-slate-500 mb-2">📍 {clima.municipio} | 💧 Humedad: {clima.humedad}%</div>
+              {clima.alerta && (
+                <div className="bg-red-100 text-red-700 px-3 py-2 rounded-lg font-semibold text-center text-xs">
+                  {clima.alerta}
+                </div>
+              )}
             </div>
-          </div>
-          {clima.alerta && (
-            <div className="bg-red-100 text-red-700 px-4 py-3 rounded-lg font-semibold text-center shadow-sm">
-              {clima.alerta}
-            </div>
-          )}
+          ))}
         </div>
       )}
 
