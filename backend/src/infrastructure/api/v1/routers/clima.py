@@ -46,10 +46,12 @@ async def get_clima(db: AsyncSession = Depends(get_db)):
                 data = response.json()
                 descripcion = data["weather"][0]["description"]
                 
-                # Lógica de alertas agrícolas
+                # 3. Lógica de alertas agrícolas (Siempre enviamos un mensaje)
                 alerta = None
                 if "lluvia" in descripcion or "tormenta" in descripcion:
                     alerta = "⚠️ Alerta: Hay lluvia. Evita aplicar fertilizantes líquidos o pesticidas hoy."
+                else:
+                    alerta = "✅ Clima óptimo: Condiciones favorables para aplicar fertilizantes y labores de campo."
                 
                 climas_data.append(ClimaResponse(
                     finca_id=finca.id,

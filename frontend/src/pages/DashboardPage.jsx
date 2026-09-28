@@ -5,7 +5,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState({ fincas: 0, lotes: 0, insumos: 0, cultivos: 0 });
   const [finanzas, setFinanzas] = useState({ ingresos: 0, egresos: 0, balance: 0, dataBalance: [], dataGastos: [] });
   const [climas, setClimas] = useState([]);
-  const [currentWeatherIndex, setCurrentWeatherIndex] = useState(0); // Estado para el carrusel
+  const [currentWeatherIndex, setCurrentWeatherIndex] = useState(0);
   const token = localStorage.getItem('agroflow_token');
 
   useEffect(() => {
@@ -81,7 +81,6 @@ export default function DashboardPage() {
     fetchAll();
   }, [token]);
 
-  // Lógica del carrusel
   const nextSlide = () => setCurrentWeatherIndex((prev) => (prev + 1) % climas.length);
   const prevSlide = () => setCurrentWeatherIndex((prev) => (prev - 1 + climas.length) % climas.length);
 
@@ -96,7 +95,7 @@ export default function DashboardPage() {
       {/* === CARRUSEL DE CLIMA === */}
       {climas.length > 0 && (
         <div className="mb-8 relative">
-          <div className={`p-6 rounded-xl shadow-sm border flex flex-col md:flex-row items-center justify-between transition-all duration-300 ${climas[currentWeatherIndex].alerta ? 'bg-amber-50 border-amber-200' : 'bg-sky-50 border-sky-200'}`}>
+          <div className={`p-6 rounded-xl shadow-sm border flex flex-col md:flex-row items-center justify-between transition-all duration-300 ${climas[currentWeatherIndex].alerta.includes('⚠️') ? 'bg-amber-50 border-amber-200' : 'bg-sky-50 border-sky-200'}`}>
             <div className="flex items-center gap-4 mb-4 md:mb-0">
               <img src={`http://openweathermap.org/img/wn/${climas[currentWeatherIndex].icono}@2x.png`} alt="Clima" className="w-20 h-20" />
               <div>
@@ -105,11 +104,13 @@ export default function DashboardPage() {
                 <p className="text-sm text-slate-500">Sensación: {climas[currentWeatherIndex].sensacion}°C | Humedad: {climas[currentWeatherIndex].humedad}%</p>
               </div>
             </div>
-            {climas[currentWeatherIndex].alerta && (
-              <div className="bg-red-100 text-red-700 px-4 py-3 rounded-lg font-semibold text-center shadow-sm">
-                {climas[currentWeatherIndex].alerta}
-              </div>
-            )}
+            
+            {/* === CAJA DE RECOMENDACIÓN (Siempre visible) === */}
+            <div className={`px-4 py-3 rounded-lg font-semibold text-center shadow-sm text-sm md:max-w-[300px] text-white ${
+              climas[currentWeatherIndex].alerta.includes('⚠️') ? 'bg-red-500' : 'bg-emerald-500'
+            }`}>
+              {climas[currentWeatherIndex].alerta}
+            </div>
           </div>
 
           {/* Flechas del carrusel */}
