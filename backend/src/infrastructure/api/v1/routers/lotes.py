@@ -70,3 +70,25 @@ async def create_lote(lote: LoteCreate, db: AsyncSession = Depends(get_db)):
     await db.commit()
     await db.refresh(nuevo_lote)
     return nuevo_lote
+
+@router.put("/{lote_id}", response_model=LoteResponse)
+async def update_lote(lote_id: uuid.UUID, lote_update: LoteCreate, db: AsyncSession = Depends(get_db)):
+    lote = await db.get(Lote, lote_id)
+    if not lote:
+        raise HTTPException(status_code=404, detail="Lote no encontrado")
+    
+    for field, value in lote_update.dict().items():
+        setattr(lote, field, value)
+    
+    await db.commit()
+    await db.refresh(lote)
+    return lote
+
+@router.delete("/{lote_id}", status_code=204)
+async def delete_lote(lote_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
+    lote = await db.get(Lote, lote_id)
+    if not lote:
+        raise HTTPException(status_code=404, detail="Lote no encontrado")
+    await db.delete(lote)
+    await db.commit()
+    return None
