@@ -94,12 +94,9 @@ except ImportError:
     pass
 # ========================================
 
-# === NUEVA RUTA DEL CLIMA ===
-try:
-    from .routers import clima
-    api_router.include_router(clima.router, prefix="/clima", tags=["Clima"])
-except ImportError:
-    pass
-# ============================
+# === RUTA DEL CLIMA (Directo para ver errores) ===
+from .routers import clima
+api_router.include_router(clima.router, prefix="/clima", tags=["Clima"])
+# =================================================
 
 router = api_router
