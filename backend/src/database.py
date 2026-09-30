@@ -12,11 +12,16 @@ from sqlalchemy.orm import declarative_base
 # Lee la URL desde el archivo .env
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Creamos el motor asíncrono. 
-# Si es SQLite, le quitamos el "check_same_thread" para que FastAPI funcione bien.
+# Creamos el motor asíncrono
 connect_args = {}
+
 if DATABASE_URL.startswith("sqlite"):
+    # Configuración para SQLite local
     connect_args = {"check_same_thread": False}
+elif DATABASE_URL.startswith("postgresql"):
+    # === MAGIA: Configuración SSL para PostgreSQL en la nube (Neon) ===
+    connect_args = {"ssl": True}
+    # =================================================================
 
 engine = create_async_engine(
     DATABASE_URL,
