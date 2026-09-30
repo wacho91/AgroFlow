@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         async with engine.begin() as conn:
             # Ejecuta create_all para todas las tablas registradas en Base.metadata
             await conn.run_sync(Base.metadata.create_all)
-        logger.info("✅ Tablas verificadas/creadas en SQLite.")
+        logger.info("✅ Tablas verificadas/creadas.")
     except Exception as e:
         logger.error(f"⚠️ Error al crear tablas: {e}")
     yield
