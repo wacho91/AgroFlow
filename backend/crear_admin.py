@@ -18,7 +18,7 @@ async def main():
             await db.flush()
 
         # 2. Creamos el usuario Admin
-        admin_email = "admin@agroflow.com"
+        admin_email = "crisadmin@agroflow.com"
         result = await db.execute(select(Usuario).where(Usuario.email == admin_email))
         user = result.scalars().first()
         
@@ -27,13 +27,13 @@ async def main():
                 id=uuid.uuid4(),
                 tenant_id=tenant.id,
                 email=admin_email,
-                nombre_completo="Administrador",
+                nombre_completo="Cristian Gonzalez",
                 password_hash=pwd_context.hash("Admin123#"), # Contraseña: Admin123#
                 activo=True
             )
             db.add(user)
             await db.commit()
-            print("✅ Usuario admin creado. Email: admin@agroflow.com | Pass: Admin123#")
+            print("✅ Usuario admin creado. Email: crisadmin@agroflow.com | Pass: Admin123#")
         else:
             print("El usuario admin ya existe.")
 
