@@ -13,7 +13,7 @@ export default function FincasPage() {
 
   const fetchFincas = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/fincas/', { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch('https://agroflow-api-h9td.onrender.com/api/v1/fincas/', { headers: { 'Authorization': `Bearer ${token}` } });
       if (res.status === 401) { navigate('/login'); return; }
       const data = await res.json();
       setFincas(data);
@@ -29,7 +29,7 @@ export default function FincasPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const method = editingId ? 'PUT' : 'POST';
-    const url = editingId ? `http://localhost:8000/api/v1/fincas/${editingId}` : 'http://localhost:8000/api/v1/fincas/';
+    const url = editingId ? `https://agroflow-api-h9td.onrender.com/api/v1/fincas/${editingId}` : 'https://agroflow-api-h9td.onrender.com/api/v1/fincas/';
     try {
       const res = await fetch(url, {
         method,
@@ -61,7 +61,7 @@ export default function FincasPage() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await fetch(`http://localhost:8000/api/v1/fincas/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+          await fetch(`https://agroflow-api-h9td.onrender.com/api/v1/fincas/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
           Swal.fire('¡Eliminado!', 'La finca ha sido eliminada.', 'success');
           fetchFincas();
         } catch (err) { Swal.fire('Error', 'No se pudo eliminar.', 'error'); }

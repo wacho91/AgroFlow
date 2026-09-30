@@ -13,7 +13,7 @@ export default function InsumosPage() {
 
   const fetchInsumos = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/insumos/', { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch('https://agroflow-api-h9td.onrender.com/api/v1/insumos/', { headers: { 'Authorization': `Bearer ${token}` } });
       const data = await res.json();
       setInsumos(data);
     } catch (err) {
@@ -28,7 +28,7 @@ export default function InsumosPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const method = editingId ? 'PUT' : 'POST';
-    const url = editingId ? `http://localhost:8000/api/v1/insumos/${editingId}` : 'http://localhost:8000/api/v1/insumos/';
+    const url = editingId ? `https://agroflow-api-h9td.onrender.com/api/v1/insumos/${editingId}` : 'https://agroflow-api-h9td.onrender.com/api/v1/insumos/';
     
     try {
       const res = await fetch(url, {
@@ -83,7 +83,7 @@ export default function InsumosPage() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await fetch(`http://localhost:8000/api/v1/insumos/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+          await fetch(`https://agroflow-api-h9td.onrender.com/api/v1/insumos/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
           Swal.fire('¡Eliminado!', 'El insumo ha sido eliminado.', 'success');
           fetchInsumos();
         } catch (err) {

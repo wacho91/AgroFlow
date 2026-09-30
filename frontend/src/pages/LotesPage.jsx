@@ -16,14 +16,14 @@ export default function LotesPage() {
 
   const fetchLotes = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/lotes/', { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch('https://agroflow-api-h9td.onrender.com/api/v1/lotes/', { headers: { 'Authorization': `Bearer ${token}` } });
       const data = await res.json();
       setLotes(data);
     } catch (err) { setError('Error al cargar lotes'); }
   };
 
   const fetchFincas = async () => {
-    const res = await fetch('http://localhost:8000/api/v1/fincas/', { headers: { 'Authorization': `Bearer ${token}` } });
+    const res = await fetch('https://agroflow-api-h9td.onrender.com/api/v1/fincas/', { headers: { 'Authorization': `Bearer ${token}` } });
     const data = await res.json();
     setFincas(data);
     if (data.length > 0 && !editingId) setForm(prev => ({ ...prev, finca_id: data[0].id }));
@@ -38,7 +38,7 @@ export default function LotesPage() {
     e.preventDefault();
     setSaving(true);
     const method = editingId ? 'PUT' : 'POST';
-    const url = editingId ? `http://localhost:8000/api/v1/lotes/${editingId}` : 'http://localhost:8000/api/v1/lotes/';
+    const url = editingId ? `https://agroflow-api-h9td.onrender.com/api/v1/lotes/${editingId}` : 'https://agroflow-api-h9td.onrender.com/api/v1/lotes/';
     try {
       const res = await fetch(url, {
         method,
@@ -78,7 +78,7 @@ export default function LotesPage() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await fetch(`http://localhost:8000/api/v1/lotes/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+          await fetch(`https://agroflow-api-h9td.onrender.com/api/v1/lotes/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
           Swal.fire('¡Eliminado!', 'El lote fue eliminado.', 'success');
           fetchLotes();
         } catch (err) { Swal.fire('Error', 'No se pudo eliminar.', 'error'); }

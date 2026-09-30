@@ -17,9 +17,9 @@ export default function CiclosPage() {
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
       const [resCiclos, resLotes, resCultivos] = await Promise.all([
-        fetch('http://localhost:8000/api/v1/ciclos/', { headers }),
-        fetch('http://localhost:8000/api/v1/lotes/', { headers }),
-        fetch('http://localhost:8000/api/v1/cultivos/', { headers })
+        fetch('https://agroflow-api-h9td.onrender.com/api/v1/ciclos/', { headers }),
+        fetch('https://agroflow-api-h9td.onrender.com/api/v1/lotes/', { headers }),
+        fetch('https://agroflow-api-h9td.onrender.com/api/v1/cultivos/', { headers })
       ]);
 
       const dataCiclos = resCiclos.ok ? await resCiclos.json() : [];
@@ -49,7 +49,7 @@ export default function CiclosPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      const res = await fetch('http://localhost:8000/api/v1/ciclos/', {
+      const res = await fetch('https://agroflow-api-h9td.onrender.com/api/v1/ciclos/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(form)
@@ -95,7 +95,7 @@ export default function CiclosPage() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const res = await fetch(`http://localhost:8000/api/v1/ciclos/${ciclo.id}/cosechar`, {
+          const res = await fetch(`https://agroflow-api-h9td.onrender.com/api/v1/ciclos/${ciclo.id}/cosechar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify(result.value)

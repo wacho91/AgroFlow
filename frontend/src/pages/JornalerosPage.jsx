@@ -14,7 +14,7 @@ export default function JornalerosPage() {
 
   const fetchJornaleros = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/jornaleros/', { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch('https://agroflow-api-h9td.onrender.com/api/v1/jornaleros/', { headers: { 'Authorization': `Bearer ${token}` } });
       if (!res.ok) throw new Error('Error al cargar');
       const data = await res.json();
       
@@ -35,8 +35,8 @@ export default function JornalerosPage() {
     setSaving(true); // <- Bloqueamos el botón
     const method = editingId ? 'PUT' : 'POST';
     const url = editingId 
-      ? `http://localhost:8000/api/v1/jornaleros/${editingId}` 
-      : 'http://localhost:8000/api/v1/jornaleros/';
+      ? `https://agroflow-api-h9td.onrender.com/api/v1/jornaleros/${editingId}` 
+      : 'https://agroflow-api-h9td.onrender.com/api/v1/jornaleros/';
     
     try {
       const res = await fetch(url, {
@@ -83,7 +83,7 @@ export default function JornalerosPage() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await fetch(`http://localhost:8000/api/v1/jornaleros/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+          await fetch(`https://agroflow-api-h9td.onrender.com/api/v1/jornaleros/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
           Swal.fire('¡Eliminado!', 'El jornalero fue eliminado.', 'success');
           fetchJornaleros();
         } catch (err) { Swal.fire('Error', 'No se pudo eliminar.', 'error'); }

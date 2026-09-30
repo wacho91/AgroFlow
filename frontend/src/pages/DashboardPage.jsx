@@ -15,12 +15,12 @@ export default function DashboardPage() {
         const headers = { 'Authorization': `Bearer ${token}` };
         
         const [resFincas, resLotes, resInsumos, resCultivos, resFin, resClima] = await Promise.all([
-          fetch('http://localhost:8000/api/v1/fincas/', { headers }),
-          fetch('http://localhost:8000/api/v1/lotes/', { headers }),
-          fetch('http://localhost:8000/api/v1/insumos/', { headers }),
-          fetch('http://localhost:8000/api/v1/cultivos/', { headers }),
-          fetch('http://localhost:8000/api/v1/tesoreria/', { headers }),
-          fetch('http://localhost:8000/api/v1/clima/', { headers })
+          fetch('https://agroflow-api-h9td.onrender.com/api/v1/fincas/', { headers }),
+          fetch('https://agroflow-api-h9td.onrender.com/api/v1/lotes/', { headers }),
+          fetch('https://agroflow-api-h9td.onrender.com/api/v1/insumos/', { headers }),
+          fetch('https://agroflow-api-h9td.onrender.com/api/v1/cultivos/', { headers }),
+          fetch('https://agroflow-api-h9td.onrender.com/api/v1/tesoreria/', { headers }),
+          fetch('https://agroflow-api-h9td.onrender.com/api/v1/clima/', { headers })
         ]);
 
         const dataFincas = resFincas.ok ? await resFincas.json() : [];

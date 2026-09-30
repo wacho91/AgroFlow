@@ -12,7 +12,7 @@ export default function TesoreriaPage() {
 
   const fetchMovimientos = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/tesoreria/', { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch('https://agroflow-api-h9td.onrender.com/api/v1/tesoreria/', { headers: { 'Authorization': `Bearer ${token}` } });
       const data = await res.json();
       setMovimientos(data);
     } catch (err) {
@@ -27,7 +27,7 @@ export default function TesoreriaPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:8000/api/v1/tesoreria/', {
+      const res = await fetch('https://agroflow-api-h9td.onrender.com/api/v1/tesoreria/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(form)
@@ -64,7 +64,7 @@ export default function TesoreriaPage() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await fetch(`http://localhost:8000/api/v1/tesoreria/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+          await fetch(`https://agroflow-api-h9td.onrender.com/api/v1/tesoreria/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
           Swal.fire('¡Eliminado!', 'El movimiento fue eliminado.', 'success');
           fetchMovimientos();
         } catch (err) {

@@ -13,7 +13,7 @@ export default function LoginPage() {
     
     try {
       // Hacemos la petición real a nuestro backend en FastAPI
-      const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+      const response = await fetch('https://agroflow-api-h9td.onrender.com/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })

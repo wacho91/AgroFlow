@@ -18,10 +18,10 @@ export default function EventosPage() {
     try {
       const headers = { 'Authorization': `Bearer ${token}` };
       const [resEventos, resLotes, resInsumos, resJornaleros] = await Promise.all([
-        fetch('http://localhost:8000/api/v1/eventos/', { headers }),
-        fetch('http://localhost:8000/api/v1/lotes/', { headers }),
-        fetch('http://localhost:8000/api/v1/insumos/', { headers }),
-        fetch('http://localhost:8000/api/v1/jornaleros/', { headers })
+        fetch('https://agroflow-api-h9td.onrender.com/api/v1/eventos/', { headers }),
+        fetch('https://agroflow-api-h9td.onrender.com/api/v1/lotes/', { headers }),
+        fetch('https://agroflow-api-h9td.onrender.com/api/v1/insumos/', { headers }),
+        fetch('https://agroflow-api-h9td.onrender.com/api/v1/jornaleros/', { headers })
       ]);
 
       const dataEventos = resEventos.ok ? await resEventos.json() : [];
@@ -69,7 +69,7 @@ export default function EventosPage() {
       if (tipoEvento === 'insumo') delete payload.jornalero_id;
       else delete payload.insumo_id;
 
-      const res = await fetch('http://localhost:8000/api/v1/eventos/', {
+      const res = await fetch('https://agroflow-api-h9td.onrender.com/api/v1/eventos/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload)
@@ -107,7 +107,7 @@ export default function EventosPage() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await fetch(`http://localhost:8000/api/v1/eventos/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+          await fetch(`https://agroflow-api-h9td.onrender.com/api/v1/eventos/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
           Swal.fire('¡Anulado!', 'El evento fue eliminado.', 'success');
           fetchAllData();
         } catch (err) { Swal.fire('Error', 'No se pudo eliminar.', 'error'); }

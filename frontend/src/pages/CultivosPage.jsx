@@ -14,7 +14,7 @@ export default function CultivosPage() {
 
   const fetchCultivos = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/v1/cultivos/', { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch('https://agroflow-api-h9td.onrender.com/api/v1/cultivos/', { headers: { 'Authorization': `Bearer ${token}` } });
       const data = await res.json();
       setCultivos(data);
     } catch (err) {
@@ -30,7 +30,7 @@ export default function CultivosPage() {
     e.preventDefault();
     setSaving(true);
     const method = editingId ? 'PUT' : 'POST';
-    const url = editingId ? `http://localhost:8000/api/v1/cultivos/${editingId}` : 'http://localhost:8000/api/v1/cultivos/';
+    const url = editingId ? `https://agroflow-api-h9td.onrender.com/api/v1/cultivos/${editingId}` : 'https://agroflow-api-h9td.onrender.com/api/v1/cultivos/';
     
     try {
       const res = await fetch(url, {
@@ -73,7 +73,7 @@ export default function CultivosPage() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await fetch(`http://localhost:8000/api/v1/cultivos/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+          await fetch(`https://agroflow-api-h9td.onrender.com/api/v1/cultivos/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
           Swal.fire('¡Eliminado!', 'El cultivo fue eliminado.', 'success');
           fetchCultivos();
         } catch (err) { Swal.fire('Error', 'No se pudo eliminar.', 'error'); }
