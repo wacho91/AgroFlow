@@ -2,14 +2,11 @@ import asyncio
 import uuid
 from src.database import AsyncSessionLocal
 from src.models.tenancy import Tenant, Usuario
-from passlib.context import CryptContext
+import bcrypt # <--- Usamos bcrypt directo
 from sqlalchemy import select
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 async def main():
     async with AsyncSessionLocal() as db:
-        # 1. Buscamos o creamos un Tenant (Finca) por defecto
         result = await db.execute(select(Tenant).limit(1))
         tenant = result.scalars().first()
         if not tenant:
@@ -17,23 +14,27 @@ async def main():
             db.add(tenant)
             await db.flush()
 
-        # 2. Creamos el usuario Admin
-        admin_email = "crisadmin@agroflow.com"
+        admin_email = "admin@agroflow.com"
         result = await db.execute(select(Usuario).where(Usuario.email == admin_email))
         user = result.scalars().first()
         
         if not user:
+            # === MAGIA: Encriptar contraseña con bcrypt directo ===
+            password_bytes = "admin123".encode('utf-8')
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw(password_bytes, salt).decode('utf-8')
+            
             user = Usuario(
                 id=uuid.uuid4(),
                 tenant_id=tenant.id,
                 email=admin_email,
-                nombre_completo="Cristian Gonzalez",
-                password_hash=pwd_context.hash("Admin123#"), # Contraseña: Admin123#
+                nombre_completo="Cristian Admin",
+                password_hash=hashed_password,
                 activo=True
             )
             db.add(user)
             await db.commit()
-            print("✅ Usuario admin creado. Email: crisadmin@agroflow.com | Pass: Admin123#")
+            print("✅ Usuario admin creado. Email: admin@agroflow.com | Pass: admin123")
         else:
             print("El usuario admin ya existe.")
 
