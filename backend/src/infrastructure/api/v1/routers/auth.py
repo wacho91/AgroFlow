@@ -1,31 +1,34 @@
 from fastapi import APIRouter, Depends, HTTPException, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from passlib.context import CryptContext
 from jose import jwt
 import os
 from datetime import datetime, timedelta
+import bcrypt # <--- Usamos bcrypt directo
 
-# 5 puntitos para subir hasta src/
 from .....database import get_db
 from .....models.tenancy import Usuario
 
 router = APIRouter()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = os.getenv("JWT_SECRET", "agroflow_super_secreto_2024")
 ALGORITHM = "HS256"
 
 @router.post("/login")
 async def login(db: AsyncSession = Depends(get_db), email: str = Body(...), password: str = Body(...)):
-    # 1. Buscamos el usuario en SQLite por su email
     result = await db.execute(select(Usuario).where(Usuario.email == email))
     user = result.scalars().first()
     
-    # 2. Validamos que exista y que la contraseña sea correcta
-    if not user or not pwd_context.verify(password, user.password_hash):
+    if not user:
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
     
-    # 3. Generamos el Token JWT
+    # === MAGIA: Verificar contraseña con bcrypt directo ===
+    password_bytes = password.encode('utf-8')
+    hash_bytes = user.password_hash.encode('utf-8')
+    
+    if not bcrypt.checkpw(password_bytes, hash_bytes):
+        raise HTTPException(status_code=401, detail="Credenciales incorrectas")
+    # ======================================================
+    
     token_data = {
         "sub": str(user.id),
         "email": user.email,
