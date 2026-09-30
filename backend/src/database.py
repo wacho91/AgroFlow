@@ -9,19 +9,21 @@ from sqlalchemy.ext.asyncio import (
 )
 from sqlalchemy.orm import declarative_base
 
-# Lee la URL desde el archivo .env
+# Lee la URL desde el archivo .env o Render
 DATABASE_URL = os.getenv("DATABASE_URL")
+
+# === MAGIA: Si el link dice 'postgresql://', le agregamos el traductor '+asyncpg' ===
+if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+# =================================================================================
 
 # Creamos el motor asíncrono
 connect_args = {}
 
 if DATABASE_URL.startswith("sqlite"):
-    # Configuración para SQLite local
     connect_args = {"check_same_thread": False}
 elif DATABASE_URL.startswith("postgresql"):
-    # === MAGIA: Configuración SSL para PostgreSQL en la nube (Neon) ===
     connect_args = {"ssl": True}
-    # =================================================================
 
 engine = create_async_engine(
     DATABASE_URL,
