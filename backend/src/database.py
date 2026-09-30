@@ -10,12 +10,15 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import declarative_base
 
 # Lee la URL desde el archivo .env o Render
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL", "")
 
-# === MAGIA: Si el link dice 'postgresql://', le agregamos el traductor '+asyncpg' ===
-if DATABASE_URL and DATABASE_URL.startswith("postgresql://"):
+# === MAGIA: Blindaje total del Driver ===
+# Reemplazamos cualquier variación de postgres para que use asyncpg
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+elif DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
-# =================================================================================
+# =========================================
 
 # Creamos el motor asíncrono
 connect_args = {}
